@@ -3,7 +3,7 @@ local backdrops = require('utils.backdrops')
 local colors = require('colors.custom')
 local platform = require('utils.platform')
 
-local background_opts = backdrops:initial_options(false)
+local background_opts = backdrops:initial_options(false, true)
 
 local config = {
     max_fps = 120,
@@ -13,8 +13,8 @@ local config = {
     underline_thickness = '1.5pt',
 
     animation_fps = 120,
-    cursor_blink_ease_in = 'EaseOut',
-    cursor_blink_ease_out = 'EaseOut',
+    cursor_blink_ease_in = 'Constant',
+    cursor_blink_ease_out = 'Constant',
     default_cursor_style = 'BlinkingBlock',
     cursor_blink_rate = 650,
 

@@ -9,10 +9,21 @@ require('utils.backdrops')
     :random()
 
 require('events.left-status').setup()
-require('events.right-status').setup({ date_format = '%a %H:%M:%S' })
+require('events.right-status').setup({
+    date_format = '%a %H:%M:%S',
+    show_workspace = true,     -- Show workspace name on right side
+    show_cwd = true,           -- Show current working directory
+    cwd_use_git_root = true,    -- Show git project name instead of full path
+})
 require('events.tab-title').setup({ hide_active_tab_unseen = false, unseen_icon = 'numbered_box' })
 require('events.new-tab-button').setup()
 require('events.gui-startup').setup()
+
+-- Example: Add custom path aliases for CWD display
+-- local CwdUtil = require('utils.cwd')
+-- CwdUtil.add_alias('/Users/kei/projects', '📁 projects')
+-- CwdUtil.add_alias('/Users/kei/.config', '⚙️ config')
+-- CwdUtil.add_alias('/var/log', '📋 logs')
 
 -- Augment command palette with custom commands
 wezterm.on('augment-command-palette', function(_window, _pane)

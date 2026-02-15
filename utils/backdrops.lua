@@ -110,10 +110,33 @@ function BackDrops:_create_focus_opts()
     }
 end
 
+---@private
+---@return table
+function BackDrops:_create_transparent_opts()
+    return {
+        {
+            source = { Color = colors.background },
+            height = '120%',
+            width = '120%',
+            opacity = 0.6,
+            vertical_offset = '-10%',
+            horizontal_offset = '-10%',
+            -- enable_tab_bar = window:effective_config().enable_tab_bar,
+        }
+    }
+end
+
 ---Set the initial options for `background`
 ---@param focus_on boolean? focus mode on or off
 ---@return table|nil
-function BackDrops:initial_options(focus_on)
+function BackDrops:initial_options(focus_on, transparent_on)
+    transparent_on = transparent_on or true
+    assert(type(transparent_on) == 'boolean', 'BackDrops:initial_options - Expected a boolean')
+
+    if transparent_on then
+        return self:_create_transparent_opts()
+    end
+
     focus_on = focus_on or false
     assert(type(focus_on) == 'boolean', 'BackDrops:initial_options - Expected a boolean')
 
@@ -234,18 +257,7 @@ end
 ---Enable transparent mode (disables images, uses semi-transparent background)
 ---@param window any WezTerm `Window` see: https://wezfurlong.org/wezterm/config/lua/window/index.html
 function BackDrops:enable_transparent(window)
-    local opts = {
-        background = {
-            {
-                source = { Color = colors.background },
-                height = '100%',
-                width = '100%',
-                opacity = 0.6,
-            },
-        },
-        -- enable_tab_bar = window:effective_config().enable_tab_bar,
-    }
-    window:set_config_overrides(opts)
+    self:_set_opt(window, self:_create_transparent_opts())
 end
 
 return BackDrops:init()

@@ -47,6 +47,14 @@ local gits = {
     keyIndicatorBg = '#dc143c',
     keyIndicatorFg = '#ffffff',
 
+    -- Program icon colors
+    iconLang = '#00ff9f',        -- Green for languages
+    iconTool = '#26c6da',         -- Cyan for tools
+    iconDevOps = '#ffa726',       -- Orange for DevOps
+    iconEditor = '#ff69b4',       -- Pink for editors
+    iconSystem = '#8ecae6',       -- Light blue for system tools
+    iconDefault = '#4a5f6d',     -- Gray for unknown programs,
+
     alert = '#dc143c',
     warning = '#ff1493',
     success = '#00ff9f',
