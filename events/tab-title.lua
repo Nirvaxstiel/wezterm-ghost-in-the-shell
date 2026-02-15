@@ -3,6 +3,7 @@ local Cells = require('utils.cells')
 local OptsValidator = require('utils.opts-validator')
 local colors = require('colors.custom')
 local gits = require('colors.palette')
+local ProgramIcons = require('utils.program-icons')
 
 ---@alias Event.TabTitleOptions { unseen_icon: 'circle' | 'numbered_circle' | 'numbered_box', hide_active_tab_unseen: boolean }
 
@@ -36,6 +37,20 @@ local GLYPH_LINUX = nf.cod_terminal_linux
 local GLYPH_DEBUG = nf.fa_bug
 local GLYPH_SEARCH = '🔭'
 
+---Get icon for a process name
+---@param process_name string
+---@return string icon
+local function get_process_icon(process_name)
+    return ProgramIcons.get_process_icon(process_name)
+end
+
+---Get color for a process name
+---@param process_name string
+---@return string color
+local function get_process_color(process_name)
+    return ProgramIcons.get_process_color(process_name)
+end
+
 local GLYPH_UNSEEN_NUMBERED_BOX = {
     [1] = nf.md_numeric_1_box_multiple,
     [2] = nf.md_numeric_2_box_multiple,
@@ -68,12 +83,12 @@ local TITLE_INSET = {
 }
 
 local RENDER_VARIANTS = {
-    { 'scircle_left', 'title', 'padding',       'scircle_right' },
-    { 'scircle_left', 'title', 'unseen_output', 'padding',       'scircle_right' },
-    { 'scircle_left', 'admin', 'title',         'padding',       'scircle_right' },
-    { 'scircle_left', 'admin', 'title',         'unseen_output', 'padding',      'scircle_right' },
-    { 'scircle_left', 'wsl',   'title',         'padding',       'scircle_right' },
-    { 'scircle_left', 'wsl',   'title',         'unseen_output', 'padding',      'scircle_right' },
+    { 'scircle_left', 'icon', 'title', 'padding',       'scircle_right' },
+    { 'scircle_left', 'icon', 'title', 'unseen_output', 'padding',       'scircle_right' },
+    { 'scircle_left', 'icon', 'admin', 'title',         'padding',       'scircle_right' },
+    { 'scircle_left', 'icon', 'admin', 'title',         'unseen_output', 'padding',      'scircle_right' },
+    { 'scircle_left', 'icon', 'wsl',   'title',         'padding',       'scircle_right' },
+    { 'scircle_left', 'icon', 'wsl',   'title',         'unseen_output', 'padding',      'scircle_right' },
 }
 
 ---@type table<string, Cells.SegmentColors>
@@ -97,34 +112,109 @@ local function clean_process_name(proc)
     return a:gsub('%.exe$', '')
 end
 
----@param process_name string
+---Shorten path to show just filename or abbreviated path
+---@param path string
+---@return string
+local function shorten_path(path)
+    -- If empty or nil, return placeholder
+    if not path or path == '' then
+        return 'no title'
+    end
+
+    -- If it's just a short filename or simple name, return as-is
+    if not path:match('[/\\]') and path:len() < 20 then
+        return path
+    end
+
+    -- Handle SSH/remote sessions (user@host:path format)
+    local user_host = path:match('^%S+@%S+:')
+    if user_host then
+        local remote_path = path:sub(user_host:len() + 1)
+        if not remote_path:match('[/\\]') then
+            return path
+        end
+        local filename = remote_path:match('[^/\\]+$')
+        return user_host .. (filename or remote_path)
+    end
+
+    -- Replace home directory with ~
+    local home = wezterm.home_dir:gsub('\\', '/')
+    local short = path:gsub('\\', '/')
+    short = short:gsub('^' .. home, '~')
+
+    -- If it starts with ~/, shorten intelligently
+    if short:match('^~/') then
+        local filename = short:match('[^/]+$')
+        local dirname = short:match('^~/(.*)/[^/]+$')
+
+        if dirname and filename then
+            -- Split into parts
+            local parts = {}
+            for part in dirname:gmatch('[^/]+') do
+                table.insert(parts, part)
+            end
+
+            if #parts > 2 then
+                -- Deep paths: ~/.../dir/filename
+                return '~/' .. parts[#parts - 1] .. '/' .. filename
+            elseif #parts > 0 then
+                -- Shallow paths: ~/dir/filename
+                return '~/' .. dirname .. '/' .. filename
+            else
+                -- Just filename
+                return '~/' .. filename
+            end
+        else
+            -- Just filename if no directory
+            return '~/' .. (filename or short)
+        end
+    end
+
+    -- For non-home paths, show last 2 components
+    local parts = {}
+    for part in short:gmatch('[^/]+') do
+        table.insert(parts, part)
+    end
+
+    if #parts > 2 then
+        -- Show last 2 parts for deep paths
+        return parts[#parts - 1] .. '/' .. parts[#parts]
+    elseif #parts > 1 then
+        -- Show last 2 parts
+        return parts[#parts - 1] .. '/' .. parts[#parts]
+    elseif #parts == 1 then
+        -- Just show the single part
+        return parts[1]
+    else
+        return short
+    end
+end
+
 ---@param base_title string
 ---@param max_width number
 ---@param inset number
-local function create_title(process_name, base_title, max_width, inset)
+local function create_title(base_title, max_width, inset)
     local title
-
-    if process_name:len() > 0 then
-        title = process_name .. ' ~ ' .. base_title
-    else
-        title = base_title
-    end
 
     if base_title == 'Debug' then
         title = GLYPH_DEBUG .. ' DEBUG'
         inset = inset - 2
-    end
-
-    if base_title:match('^InputSelector:') ~= nil then
+    elseif base_title:match('^InputSelector:') ~= nil then
         title = base_title:gsub('InputSelector:', GLYPH_SEARCH)
         inset = inset - 2
+    else
+        -- Shorten the path
+        title = shorten_path(base_title)
     end
 
-    if title:len() > max_width - inset then
-        local diff = title:len() - max_width + inset
+    -- Account for icon width (will be added in separate segment)
+    local icon_width = 2 -- space + icon (approximate)
+
+    if title:len() + icon_width > max_width - inset then
+        local diff = title:len() + icon_width - max_width + inset
         title = title:sub(1, title:len() - diff)
     else
-        local padding = max_width - title:len() - inset
+        local padding = max_width - title:len() - icon_width - inset
         title = title .. string.rep(' ', padding)
     end
 
@@ -160,6 +250,8 @@ end
 ---@field unseen_output boolean
 ---@field unseen_output_count number
 ---@field is_active boolean
+---@field process_icon string
+---@field process_color string
 local Tab = {}
 Tab.__index = Tab
 
@@ -173,6 +265,8 @@ function Tab:new()
         is_admin = false,
         unseen_output = false,
         unseen_output_count = 0,
+        process_icon = '',
+        process_color = gits.iconDefault,
     }
     return setmetatable(tab, self)
 end
@@ -190,6 +284,16 @@ function Tab:set_info(event_opts, tab, max_width)
     self.unseen_output = false
     self.unseen_output_count = 0
 
+    -- Store process icon and color
+    if process_name and process_name ~= '' then
+        self.process_icon = get_process_icon(process_name)
+        self.process_color = get_process_color(process_name)
+    else
+        -- Default icon if no process name
+        self.process_icon = ProgramIcons.get_process_icon('')
+        self.process_color = gits.iconDefault
+    end
+
     if not event_opts.hide_active_tab_unseen or not tab.is_active then
         self.unseen_output, self.unseen_output_count = check_unseen_output(tab.panes)
     end
@@ -200,16 +304,17 @@ function Tab:set_info(event_opts, tab, max_width)
     end
 
     if self.title_locked then
-        self.title = create_title('', self.locked_title, max_width, inset)
+        self.title = create_title(self.locked_title, max_width, inset)
         return
     end
-    self.title = create_title(process_name, tab.active_pane.title, max_width, inset)
+    self.title = create_title(tab.active_pane.title, max_width, inset)
 end
 
 function Tab:create_cells()
     local attr = self.cells.attr
     self.cells
         :add_segment('scircle_left', GLYPH_SCIRCLE_LEFT)
+        :add_segment('icon', ' ' .. self.process_icon)
         :add_segment('admin', ' ' .. GLYPH_ADMIN)
         :add_segment('wsl', ' ' .. GLYPH_LINUX)
         :add_segment('title', ' ', nil, attr(attr.intensity('Bold')))
@@ -235,6 +340,7 @@ function Tab:update_cells(event_opts, is_active, hover)
         tab_state = 'hover'
     end
 
+    self.cells:update_segment_text('icon', ' ' .. self.process_icon)
     self.cells:update_segment_text('title', ' ' .. self.title)
 
     if event_opts.unseen_icon == 'numbered_box' and self.unseen_output then
@@ -252,6 +358,7 @@ function Tab:update_cells(event_opts, is_active, hover)
 
     self.cells
         :update_segment_colors('scircle_left', tab_colors['scircle_' .. tab_state])
+        :update_segment_colors('icon', { bg = tab_colors['text_' .. tab_state].bg, fg = self.process_color })
         :update_segment_colors('admin', tab_colors['text_' .. tab_state])
         :update_segment_colors('wsl', tab_colors['text_' .. tab_state])
         :update_segment_colors('title', tab_colors['text_' .. tab_state])
