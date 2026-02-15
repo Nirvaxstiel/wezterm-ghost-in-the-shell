@@ -1,6 +1,5 @@
 local wezterm = require('wezterm')
 local Cells = require('utils.cells')
-local colors = require('colors.custom')
 local gits = require('colors.palette')
 
 local nf = wezterm.nerdfonts
