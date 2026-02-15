@@ -1,25 +1,4 @@
 local platform = require('utils.platform')
-local wezterm = require("wezterm")
-
-local function file_exists(path)
-    local f = io.open(path, "r")
-    if f then
-        f:close()
-        return true
-    end
-    return false
-end
-
-
-local home = wezterm.home_dir
-
-local candidates = {
-    "C:/Program Files/Git/bin/bash.exe",
-    "C:/Program Files/Git/usr/bin/bash.exe",
-    "C:/Program Files (x86)/Git/bin/bash.exe",
-    home .. "/scoop/apps/git/current/bin/bash.exe",
-}
-
 
 local options = {
     default_prog = {},

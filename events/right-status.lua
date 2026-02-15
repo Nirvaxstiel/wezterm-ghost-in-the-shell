@@ -2,7 +2,6 @@ local wezterm = require('wezterm')
 local umath = require('utils.math')
 local Cells = require('utils.cells')
 local OptsValidator = require('utils.opts-validator')
-local colors = require('colors.custom')
 local gits = require('colors.palette')
 
 ---@alias Event.RightStatusOptions { date_format?: string }
