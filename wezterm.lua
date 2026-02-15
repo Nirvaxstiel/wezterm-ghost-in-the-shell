@@ -3,8 +3,8 @@ local wezterm = require('wezterm')
 local command_palette = require('config.command-palette')
 
 require('utils.backdrops')
--- :set_focus('#000000')
--- :set_images_dir(require('wezterm').home_dir .. '/Pictures/Wallpapers/')
+    -- :set_focus('#000000')
+    -- :set_images_dir(require('wezterm').home_dir .. '/Pictures/Wallpapers/')
     :set_images()
     :random()
 
