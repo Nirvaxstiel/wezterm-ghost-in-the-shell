@@ -1,21 +1,60 @@
 local Config = require('config')
 local wezterm = require('wezterm')
+local Features = require('config.features')
 local command_palette = require('config.command-palette')
 
+-- ============================================
+-- LOAD USER CONFIGURATION
+-- ============================================
+
+-- Try to load user config, fall back to defaults
+local user_config_exists = pcall(function()
+    local user_config = require('config.user')
+    user_config:apply()
+end)
+
+-- Log if user config doesn't exist (only for first time setup)
+if not user_config_exists then
+    wezterm.log_info('No user config found at config/user.lua. Using defaults.')
+    wezterm.log_info('Copy config/user.lua.example to config/user.lua to customize.')
+end
+
+-- ============================================
+-- SETUP ALL PLUGINS
+-- ============================================
+
+-- Let plugins handle their own feature checks
+-- Single guard clause in each setup is enough
+
+-- Backdrops
 require('utils.backdrops')
     -- :set_focus('#000000')
     -- :set_images_dir(require('wezterm').home_dir .. '/Pictures/Wallpapers/')
     :set_images()
     :random()
 
+-- Events
 require('events.left-status').setup()
+
+-- Get user opts for right-status
+local user_opts = {}
+pcall(function()
+    local user_config = require('config.user')
+    user_opts = user_config.custom or {}
+end)
+
 require('events.right-status').setup({
-    date_format = '%a %H:%M:%S',
-    show_workspace = true,     -- Show workspace name on right side
-    show_cwd = true,           -- Show current working directory
-    cwd_use_git_root = true,    -- Show git project name instead of full path
+    date_format = user_opts.date_format or '%a %H:%M:%S',
+    show_workspace = Features.is_enabled('workspace-display'),
+    show_cwd = Features.is_enabled('cwd-display'),
+    cwd_use_git_root = user_opts.cwd_use_git_root or true,
 })
-require('events.tab-title').setup({ hide_active_tab_unseen = false, unseen_icon = 'numbered_box' })
+
+require('events.tab-title').setup({
+    hide_active_tab_unseen = user_opts.hide_active_tab_unseen or false,
+    unseen_icon = user_opts.unseen_icon or 'circle',
+})
+
 require('events.new-tab-button').setup()
 require('events.gui-startup').setup()
 

@@ -4,6 +4,7 @@ local domains = require('config.domains')
 local Cells = require('utils.cells')
 local colors = require('colors.custom')
 local gits = require('colors.palette')
+local Features = require('config.features')
 
 local nf = wezterm.nerdfonts
 local act = wezterm.action
@@ -93,6 +94,11 @@ end
 local choices, choices_data = build_choices()
 
 M.setup = function()
+    -- Early return if disabled (setup-only guard)
+    if not Features.is_enabled('new-tab-button') then
+        return
+    end
+
     wezterm.on('new-tab-button-click', function(window, pane, button, default_action)
         if default_action and button == 'Left' then
             window:perform_action(default_action, pane)

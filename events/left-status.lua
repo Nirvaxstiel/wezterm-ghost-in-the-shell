@@ -1,6 +1,7 @@
 local wezterm = require('wezterm')
 local Cells = require('utils.cells')
 local gits = require('colors.palette')
+local Features = require('config.features')
 
 local nf = wezterm.nerdfonts
 local attr = Cells.attr
@@ -28,6 +29,12 @@ cells
 
 M.setup = function()
     wezterm.on('update-right-status', function(window, _pane)
+        -- Return early if feature is disabled
+        if not Features.is_enabled('left-status') then
+            window:set_left_status('')
+            return
+        end
+
         local name = window:active_key_table()
 
         -- Only show left status if there's actually a mode active

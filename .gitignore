@@ -45,3 +45,4 @@ Desktop.ini
 
 # Log files
 *.log
+config/user.lua

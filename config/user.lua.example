@@ -1,0 +1,77 @@
+-- User Configuration
+-- This file overrides default feature settings
+-- Duplicate this file to config/user.lua and customize
+
+local Features = require('config.features')
+
+return {
+    -- ============================================
+    -- FEATURE TOGGLES
+    -- ============================================
+
+    features = {
+        -- UI Components
+        ['left-status'] = true,        -- Left status bar (key table indicator)
+        ['right-status'] = true,       -- Right status bar (workspace, cwd, battery, date)
+        ['workspace-display'] = true,   -- Show workspace name in right status
+        ['cwd-display'] = true,        -- Show current directory in right status
+        ['battery-display'] = true,    -- Show battery status in right status
+        ['date-display'] = true,       -- Show date/time in right status
+        ['tab-bar'] = true,            -- Tab bar at top
+        ['new-tab-button'] = true,     -- New tab button on right of tab bar
+        ['gui-startup'] = true,        -- Maximize window on startup
+
+        -- Visual Effects
+        ['backdrops'] = true,          -- Background images
+        ['background-blur'] = true,    -- Background blur effects (platform-specific)
+        ['animations'] = true,         -- UI animations (cursor blink, etc.)
+        ['cursor-blink'] = true,       -- Cursor blinking
+        ['visual-bell'] = true,        -- Visual bell effect
+        ['scroll-bar'] = true,        -- Scroll bar on right
+
+        -- Functionality
+        ['scrollback'] = true,         -- Scrollback buffer (20000 lines)
+        ['hyperlinks'] = true,         -- Clickable hyperlinks
+        ['command-palette'] = true,    -- Command palette (F2)
+        ['auto-reload'] = true,       -- Auto-reload config on file change
+        ['exit-confirmation'] = true,  -- Window close confirmation
+
+        -- Tab Features
+        ['tab-index'] = false,        -- Show tab index numbers
+        ['tab-title'] = true,         -- Custom tab titles with process icons
+        ['last-active-tab'] = true,   -- Switch to last active tab when closing tab
+    },
+
+    -- ============================================
+    -- CUSTOM OVERRIDES
+    -- ============================================
+
+    -- Custom values that override defaults
+    custom = {
+        -- Scrollback buffer size (if scrollback enabled)
+        scrollback_lines = 20000,
+
+        -- Date format for right status (if date-display enabled)
+        date_format = '%a %H:%M:%S',
+
+        -- Use git root for CWD display (if cwd-display enabled)
+        cwd_use_git_root = true,
+
+        -- Hide unseen output for active tab (if tab-title enabled)
+        hide_active_tab_unseen = true,
+
+        -- Unseen output icon style (if tab-title enabled)
+        -- Options: 'circle', 'numbered_circle', 'numbered_box'
+        unseen_icon = 'circle',
+    },
+
+    -- ============================================
+    -- APPLY SETTINGS TO REGISTRY
+    -- ============================================
+
+    apply = function(self)
+        for name, enabled in pairs(self.features) do
+            Features.set_enabled(name, enabled)
+        end
+    end,
+}
