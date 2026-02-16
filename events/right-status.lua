@@ -143,7 +143,7 @@ M.setup = function(opts)
         if Features.is_enabled('cwd-display') then
             local cwd_uri = pane:get_current_working_dir()
             if cwd_uri then
-                local cwd = ''
+                local cwd
                 if type(cwd_uri) == 'userdata' then
                     cwd = cwd_uri.file_path
                 else

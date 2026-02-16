@@ -37,7 +37,7 @@ require('events.tab-title').setup({
 require('events.new-tab-button').setup()
 require('events.gui-startup').setup()
 
-wezterm.on('toggle-feature', function(window, _pane, feature_name)
+wezterm.on('toggle-feature', function(_window, _pane, feature_name)
     if not feature_name then
         return
     end
