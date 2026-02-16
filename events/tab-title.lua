@@ -287,11 +287,14 @@ function Tab:set_info(event_opts, tab, max_width)
 
     -- Store process icon and color
     if process_name and process_name ~= '' then
-        self.process_icon = get_process_icon(process_name)
-        self.process_color = get_process_color(process_name)
+        self.process_icon = get_process_icon(process_name) or ProgramIcons.get_process_icon('')
+        self.process_color = get_process_color(process_name) or gits.iconDefault
     else
         -- Default icon if no process name
         self.process_icon = ProgramIcons.get_process_icon('')
+        if not self.process_icon then
+            self.process_icon = ''
+        end
         self.process_color = gits.iconDefault
     end
 
@@ -341,7 +344,7 @@ function Tab:update_cells(event_opts, is_active, hover)
         tab_state = 'hover'
     end
 
-    self.cells:update_segment_text('icon', ' ' .. self.process_icon)
+    self.cells:update_segment_text('icon', ' ' .. (self.process_icon or ''))
     self.cells:update_segment_text('title', ' ' .. self.title)
 
     if event_opts.unseen_icon == 'numbered_box' and self.unseen_output then

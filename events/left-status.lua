@@ -29,7 +29,6 @@ cells
 
 M.setup = function()
     wezterm.on('update-right-status', function(window, _pane)
-        -- Return early if feature is disabled
         if not Features.is_enabled('left-status') then
             window:set_left_status('')
             return
@@ -37,7 +36,6 @@ M.setup = function()
 
         local name = window:active_key_table()
 
-        -- Only show left status if there's actually a mode active
         if not name and not window:leader_is_active() then
             window:set_left_status('')
             return

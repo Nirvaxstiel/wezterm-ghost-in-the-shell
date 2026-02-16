@@ -4,6 +4,7 @@ local Cells = require('utils.cells')
 local OptsValidator = require('utils.opts-validator')
 local gits = require('colors.palette')
 local CwdUtil = require('utils.cwd')
+local Features = require('config.features')
 
 ---@alias Event.RightStatusOptions { date_format?: string, show_cwd?: boolean, cwd_use_git_root?: boolean, show_workspace?: boolean }
 
