@@ -15,8 +15,6 @@ M.items = {
         brief = 'Toggle Feature',
         action = wezterm.action_callback(function(window, _pane)
             local choices = Features.get_palette_items()
-            wezterm.log_info('COMMAND_PALETTE: Got ' .. #choices .. ' feature choices')
-            
             window:perform_action(act.InputSelector({
                 title = 'Toggle Feature',
                 choices = choices,
@@ -50,7 +48,6 @@ if Features.is_enabled('hyperlinks') then
             },
             action = wezterm.action_callback(function(window, pane)
                 local url = window:get_selection_text_for_pane(pane)
-                wezterm.log_info('opening: ' .. url)
                 wezterm.open_with(url)
             end),
         }),

@@ -336,7 +336,7 @@ end
 ---@param event_opts Event.TabTitleOptions
 ---@param is_active boolean
 ---@param hover boolean
-function Tab:update_cells(event_opts, is_active, hover)
+function Tab:update_cells(event_opts, is_active, hover, tab_index)
     local tab_state = 'default'
     if is_active then
         tab_state = 'active'
@@ -345,7 +345,13 @@ function Tab:update_cells(event_opts, is_active, hover)
     end
 
     self.cells:update_segment_text('icon', ' ' .. (self.process_icon or ''))
-    self.cells:update_segment_text('title', ' ' .. self.title)
+
+    -- Add tab index if feature is enabled
+    local title_text = ' ' .. self.title
+    if Features.is_enabled('tab-index') and tab_index then
+        title_text = ' ' .. tab_index .. ':' .. self.title
+    end
+    self.cells:update_segment_text('title', title_text)
 
     if event_opts.unseen_icon == 'numbered_box' and self.unseen_output then
         self.cells:update_segment_text(
@@ -439,11 +445,12 @@ M.setup = function(opts)
             tab_list[tab.tab_id] = Tab:new()
             tab_list[tab.tab_id]:set_info(valid_opts, tab, max_width)
             tab_list[tab.tab_id]:create_cells()
+            tab_list[tab.tab_id]:update_cells(valid_opts, tab.is_active, hover, tab.tab_index)
             return tab_list[tab.tab_id]:render()
         end
 
         tab_list[tab.tab_id]:set_info(valid_opts, tab, max_width)
-        tab_list[tab.tab_id]:update_cells(valid_opts, tab.is_active, hover)
+        tab_list[tab.tab_id]:update_cells(valid_opts, tab.is_active, hover, tab.tab_index)
         return tab_list[tab.tab_id]:render()
     end)
 end

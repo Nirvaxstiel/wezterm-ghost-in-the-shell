@@ -75,10 +75,7 @@ function Features.toggle(name)
         return false
     end
 
-    local old_state = feature.enabled
     feature.enabled = not feature.enabled
-    wezterm.log_info(string.format('TOGGLE: %s changed from %s to %s', name, tostring(old_state), tostring(feature.enabled)))
-    
     Features.save_to_user_config()
     return feature.enabled
 end
@@ -98,29 +95,19 @@ local CUSTOM_DEFAULTS = {
 ---Load user configuration from JSON file
 ---@return table|nil config The loaded config, or nil if not found
 function Features.load_user_config()
-    wezterm.log_info('LOAD_CONFIG: Attempting to load from ' .. USER_CONFIG_PATH)
-    
     local file = io.open(USER_CONFIG_PATH, 'r')
     if not file then
-        wezterm.log_info('LOAD_CONFIG: File not found')
         return nil
     end
 
     local content = file:read('*all')
     file:close()
-    
-    wezterm.log_info('LOAD_CONFIG: Read ' .. #content .. ' bytes')
 
     local success, config = pcall(wezterm.json_parse, content)
     if not success then
-        wezterm.log_error('LOAD_CONFIG: Failed to parse user.json: ' .. tostring(config))
+        wezterm.log_error('Failed to parse user.json: ' .. tostring(config))
         return nil
     end
-    
-    local feature_count = config.features and tostring(#config.features) or '0'
-    local count = 0
-    for _ in pairs(config.features or {}) do count = count + 1 end
-    wezterm.log_info('LOAD_CONFIG: Successfully parsed, found ' .. count .. ' features')
 
     return config
 end
@@ -129,18 +116,12 @@ end
 ---@param config table The configuration table with 'features' and 'custom' fields
 function Features.apply_config(config)
     if not config then
-        wezterm.log_info('APPLY_CONFIG: No config provided')
         return
     end
 
-    local count = 0
-    for _ in pairs(config.features or {}) do count = count + 1 end
-    wezterm.log_info('APPLY_CONFIG: Applying config with ' .. count .. ' features')
-    
     -- Apply feature states
     if config.features then
         for name, enabled in pairs(config.features) do
-            wezterm.log_info(string.format('APPLY_CONFIG: Setting %s = %s', name, tostring(enabled)))
             Features.set_enabled(name, enabled)
         end
     end
@@ -170,12 +151,8 @@ end
 function Features.save_to_user_config()
     local features = {}
 
-    local count = 0
-    for _ in pairs(Features.registry) do count = count + 1 end
-    wezterm.log_info('SAVE_CONFIG: Saving ' .. count .. ' features')
     for name, feature in pairs(Features.registry) do
         features[name] = feature.enabled
-        wezterm.log_info(string.format('SAVE_CONFIG: %s = %s', name, tostring(feature.enabled)))
     end
 
     -- Load existing config to preserve custom settings
@@ -271,11 +248,9 @@ function Features.get_palette_items()
         return a.name < b.name
     end)
 
-    wezterm.log_info('PALETTE: Building palette items for ' .. #features .. ' features')
     for _, feature in ipairs(features) do
         local status_icon = feature.enabled and '✓ ' or '✗ '
         local deps = #feature.dependencies > 0 and ' [deps: ' .. table.concat(feature.dependencies, ', ') .. ']' or ''
-        wezterm.log_info(string.format('PALETTE: %s = %s (registry=%s)', feature.name, tostring(feature.enabled), tostring(Features.registry[feature.name].enabled)))
         table.insert(items, {
             id = feature.name,
             label = status_icon .. feature.name .. deps .. ' - ' .. feature.description,

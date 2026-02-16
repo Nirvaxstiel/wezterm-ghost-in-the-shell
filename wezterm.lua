@@ -6,10 +6,7 @@ local Features = require('config.features')
 -- Load and apply user configuration from JSON FIRST
 local user_config = Features.load_user_config()
 if user_config then
-    wezterm.log_info('Loading user config from config/user.json')
     Features.apply_config(user_config)
-else
-    wezterm.log_info('No user config found at config/user.json. Using defaults.')
 end
 
 -- Load command palette AFTER config is applied
