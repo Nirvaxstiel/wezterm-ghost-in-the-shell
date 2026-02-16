@@ -13,7 +13,7 @@ M.items = {
     { brief = 'Search Text',        action = act.Search({ CaseInSensitiveString = '' }) },
     {
         brief = 'Toggle Feature',
-        action = wezterm.action_callback(function(window, _pane)
+        action = wezterm.action_callback(function(window, pane)
             local choices = Features.get_palette_items()
             window:perform_action(act.InputSelector({
                 title = 'Toggle Feature',
@@ -29,7 +29,7 @@ M.items = {
                     local state_text = new_state and 'enabled' or 'disabled'
                     win:toast_notification('Feature Toggled', 'Feature "' .. id .. '" is now ' .. state_text)
                 end),
-            }), _pane)
+            }), pane)
         end),
     },
 }
