@@ -126,6 +126,12 @@ M.setup = function(opts)
     end
 
     wezterm.on('update-right-status', function(window, pane)
+        -- Return early if right-status feature is disabled
+        if not Features.is_enabled('right-status') then
+            window:set_right_status('')
+            return
+        end
+
         local battery_text, battery_icon = battery_info()
 
         -- Get workspace name
@@ -133,7 +139,7 @@ M.setup = function(opts)
 
         -- Get CWD if enabled
         local cwd_text = ''
-        if valid_opts.show_cwd then
+        if Features.is_enabled('cwd-display') then
             local cwd_uri = pane:get_current_working_dir()
             if cwd_uri then
                 local cwd = ''
@@ -161,23 +167,28 @@ M.setup = function(opts)
         -- Build segments list based on what's shown
         local segments = {}
 
-        if valid_opts.show_workspace and workspace_text ~= '' then
+        if Features.is_enabled('workspace-display') and workspace_text ~= '' then
             table.insert(segments, 'workspace_icon')
             table.insert(segments, 'workspace_text')
             table.insert(segments, 'sep_workspace')
         end
 
-        if valid_opts.show_cwd and cwd_text ~= '' then
+        if Features.is_enabled('cwd-display') and cwd_text ~= '' then
             table.insert(segments, 'cwd_icon')
             table.insert(segments, 'cwd_text')
             table.insert(segments, 'separator1')
         end
 
-        table.insert(segments, 'date_icon')
-        table.insert(segments, 'date_text')
-        table.insert(segments, 'separator2')
-        table.insert(segments, 'battery_icon')
-        table.insert(segments, 'battery_text')
+        if Features.is_enabled('date-display') then
+            table.insert(segments, 'date_icon')
+            table.insert(segments, 'date_text')
+            table.insert(segments, 'separator2')
+        end
+
+        if Features.is_enabled('battery-display') then
+            table.insert(segments, 'battery_icon')
+            table.insert(segments, 'battery_text')
+        end
 
         window:set_right_status(
             wezterm.format(cells:render(segments))

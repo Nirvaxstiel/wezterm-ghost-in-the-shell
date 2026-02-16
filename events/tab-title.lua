@@ -4,6 +4,7 @@ local OptsValidator = require('utils.opts-validator')
 local colors = require('colors.custom')
 local gits = require('colors.palette')
 local ProgramIcons = require('utils.program-icons')
+local Features = require('config.features')
 
 ---@alias Event.TabTitleOptions { unseen_icon: 'circle' | 'numbered_circle' | 'numbered_box', hide_active_tab_unseen: boolean }
 
@@ -426,6 +427,11 @@ M.setup = function(opts)
     end)
 
     wezterm.on('format-tab-title', function(tab, _tabs, _panes, _config, hover, max_width)
+        -- Return default if tab-title feature is disabled
+        if not Features.is_enabled('tab-title') then
+            return tab.active_pane.title
+        end
+
         if not tab_list[tab.tab_id] then
             tab_list[tab.tab_id] = Tab:new()
             tab_list[tab.tab_id]:set_info(valid_opts, tab, max_width)
