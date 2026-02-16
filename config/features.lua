@@ -1,6 +1,3 @@
--- Central Feature Registry
--- Single source of truth for all toggleable features
-
 local wezterm = require('wezterm')
 
 ---@class Feature
@@ -16,27 +13,17 @@ local Features = {
     registry = {},
 }
 
----Register a feature in the registry
----@param name string Feature identifier
----@param feature Feature Feature definition
 function Features.register(name, feature)
     feature.name = name
-    feature.enabled = feature.enabled ~= false  -- Default true
+    feature.enabled = feature.enabled ~= false
     feature.dependencies = feature.dependencies or {}
     Features.registry[name] = feature
 end
 
----Get feature from registry
----@param name string Feature identifier
----@return Feature|nil
 function Features.get(name)
     return Features.registry[name]
 end
 
----Set feature enabled state
----@param name string Feature identifier
----@param enabled boolean Enabled state
----@return boolean success
 function Features.set_enabled(name, enabled)
     local feature = Features.registry[name]
     if not feature then
@@ -47,9 +34,6 @@ function Features.set_enabled(name, enabled)
     return true
 end
 
----Check if feature is enabled
----@param name string Feature identifier
----@return boolean
 function Features.is_enabled(name)
     local feature = Features.registry[name]
     if not feature then
@@ -57,7 +41,6 @@ function Features.is_enabled(name)
         return false
     end
 
-    -- Check dependencies
     for _, dep in ipairs(feature.dependencies) do
         if not Features.is_enabled(dep) then
             wezterm.log_warn('Feature ' .. name .. ' disabled: dependency ' .. dep .. ' not enabled')
@@ -68,14 +51,10 @@ function Features.is_enabled(name)
     return feature.enabled
 end
 
----Get all features
----@return table<string, Feature>
 function Features.get_all()
     return Features.registry
 end
 
----List all features with their enabled state
----@return table
 function Features.list()
     local list = {}
     for name, feature in pairs(Features.registry) do
@@ -89,9 +68,222 @@ function Features.list()
     return list
 end
 
--- ============================================
--- REGISTER ALL FEATURES
--- ============================================
+function Features.toggle(name)
+    local feature = Features.registry[name]
+    if not feature then
+        wezterm.log_warn('Feature not found: ' .. name)
+        return false
+    end
+
+    local old_state = feature.enabled
+    feature.enabled = not feature.enabled
+    wezterm.log_info(string.format('TOGGLE: %s changed from %s to %s', name, tostring(old_state), tostring(feature.enabled)))
+    
+    Features.save_to_user_config()
+    return feature.enabled
+end
+
+-- JSON file path for user config
+local USER_CONFIG_PATH = wezterm.config_dir .. '/config/user.json'
+
+-- Default custom settings
+local CUSTOM_DEFAULTS = {
+    scrollback_lines = 20000,
+    date_format = '%a %H:%M:%S',
+    cwd_use_git_root = true,
+    hide_active_tab_unseen = true,
+    unseen_icon = 'circle',
+}
+
+---Load user configuration from JSON file
+---@return table|nil config The loaded config, or nil if not found
+function Features.load_user_config()
+    wezterm.log_info('LOAD_CONFIG: Attempting to load from ' .. USER_CONFIG_PATH)
+    
+    local file = io.open(USER_CONFIG_PATH, 'r')
+    if not file then
+        wezterm.log_info('LOAD_CONFIG: File not found')
+        return nil
+    end
+
+    local content = file:read('*all')
+    file:close()
+    
+    wezterm.log_info('LOAD_CONFIG: Read ' .. #content .. ' bytes')
+
+    local success, config = pcall(wezterm.json_parse, content)
+    if not success then
+        wezterm.log_error('LOAD_CONFIG: Failed to parse user.json: ' .. tostring(config))
+        return nil
+    end
+    
+    local feature_count = config.features and tostring(#config.features) or '0'
+    local count = 0
+    for _ in pairs(config.features or {}) do count = count + 1 end
+    wezterm.log_info('LOAD_CONFIG: Successfully parsed, found ' .. count .. ' features')
+
+    return config
+end
+
+---Apply loaded configuration to features
+---@param config table The configuration table with 'features' and 'custom' fields
+function Features.apply_config(config)
+    if not config then
+        wezterm.log_info('APPLY_CONFIG: No config provided')
+        return
+    end
+
+    local count = 0
+    for _ in pairs(config.features or {}) do count = count + 1 end
+    wezterm.log_info('APPLY_CONFIG: Applying config with ' .. count .. ' features')
+    
+    -- Apply feature states
+    if config.features then
+        for name, enabled in pairs(config.features) do
+            wezterm.log_info(string.format('APPLY_CONFIG: Setting %s = %s', name, tostring(enabled)))
+            Features.set_enabled(name, enabled)
+        end
+    end
+end
+
+---Get custom settings with defaults
+---@return table Custom settings merged with defaults
+function Features.get_custom_settings()
+    local config = Features.load_user_config()
+    local custom = {}
+
+    -- Start with defaults
+    for key, value in pairs(CUSTOM_DEFAULTS) do
+        custom[key] = value
+    end
+
+    -- Override with user settings if exists
+    if config and config.custom then
+        for key, value in pairs(config.custom) do
+            custom[key] = value
+        end
+    end
+
+    return custom
+end
+
+function Features.save_to_user_config()
+    local features = {}
+
+    local count = 0
+    for _ in pairs(Features.registry) do count = count + 1 end
+    wezterm.log_info('SAVE_CONFIG: Saving ' .. count .. ' features')
+    for name, feature in pairs(Features.registry) do
+        features[name] = feature.enabled
+        wezterm.log_info(string.format('SAVE_CONFIG: %s = %s', name, tostring(feature.enabled)))
+    end
+
+    -- Load existing config to preserve custom settings
+    local existing_config = Features.load_user_config()
+    local custom = existing_config and existing_config.custom or {}
+
+    -- Ensure all defaults exist
+    for key, default in pairs(CUSTOM_DEFAULTS) do
+        if custom[key] == nil then
+            custom[key] = default
+        end
+    end
+
+    local config = {
+        features = features,
+        custom = custom,
+    }
+
+    local json_str = wezterm.json_encode(config)
+    if not json_str then
+        wezterm.log_error('Failed to encode config to JSON')
+        return false
+    end
+
+    -- Pretty print the JSON
+    json_str = Features.pretty_json(json_str)
+
+    local file = io.open(USER_CONFIG_PATH, 'w')
+    if not file then
+        wezterm.log_error('Failed to write config/user.json')
+        return false
+    end
+
+    file:write(json_str)
+    file:close()
+
+    wezterm.log_info('Feature states saved to config/user.json')
+    return true
+end
+
+---Pretty print JSON string with indentation
+---@param json_str string
+---@return string
+function Features.pretty_json(json_str)
+    local result = {}
+    local indent = 0
+    local in_string = false
+    local escape = false
+
+    for i = 1, #json_str do
+        local char = json_str:sub(i, i)
+
+        if escape then
+            table.insert(result, char)
+            escape = false
+        elseif char == "\\" then
+            table.insert(result, char)
+            escape = true
+        elseif char == '"' then
+            table.insert(result, char)
+            in_string = not in_string
+        elseif in_string then
+            table.insert(result, char)
+        elseif char == "{" or char == "[" then
+            table.insert(result, char)
+            table.insert(result, "\n")
+            indent = indent + 1
+            table.insert(result, string.rep("  ", indent))
+        elseif char == "}" or char == "]" then
+            table.insert(result, "\n")
+            indent = indent - 1
+            table.insert(result, string.rep("  ", indent))
+            table.insert(result, char)
+        elseif char == "," then
+            table.insert(result, char)
+            table.insert(result, "\n")
+            table.insert(result, string.rep("  ", indent))
+        elseif char == ":" then
+            table.insert(result, char)
+            table.insert(result, " ")
+        else
+            table.insert(result, char)
+        end
+    end
+
+    return table.concat(result)
+end
+
+function Features.get_palette_items()
+    local items = {}
+    local features = Features.list()
+    table.sort(features, function(a, b)
+        return a.name < b.name
+    end)
+
+    wezterm.log_info('PALETTE: Building palette items for ' .. #features .. ' features')
+    for _, feature in ipairs(features) do
+        local status_icon = feature.enabled and '✓ ' or '✗ '
+        local deps = #feature.dependencies > 0 and ' [deps: ' .. table.concat(feature.dependencies, ', ') .. ']' or ''
+        wezterm.log_info(string.format('PALETTE: %s = %s (registry=%s)', feature.name, tostring(feature.enabled), tostring(Features.registry[feature.name].enabled)))
+        table.insert(items, {
+            id = feature.name,
+            label = status_icon .. feature.name .. deps .. ' - ' .. feature.description,
+        })
+    end
+
+    return items
+end
 
 -- UI Components
 Features.register('left-status', {

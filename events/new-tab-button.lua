@@ -12,7 +12,6 @@ local attr = Cells.attr
 
 local M = {}
 
----@type table<string, Cells.SegmentColors>
 local btn_colors = {
     label_text   = { fg = colors.foreground },
     icon_default = { fg = gits.iconTerminal },
@@ -33,7 +32,6 @@ local function build_choices()
     local choices_data = {}
     local idx = 1
 
-    -- Add launch menu items (DefaultDomain)
     for _, v in ipairs(launch_menu) do
         cells:update_segment_text('label_text', v.label)
 
@@ -48,7 +46,6 @@ local function build_choices()
         idx = idx + 1
     end
 
-    -- Add WSL domains
     for _, v in ipairs(domains.wsl_domains) do
         cells:update_segment_text('label_text', v.name)
 
@@ -62,9 +59,9 @@ local function build_choices()
         idx = idx + 1
     end
 
-    -- Add SSH domains
     for _, v in ipairs(domains.ssh_domains) do
         cells:update_segment_text('label_text', v.name)
+
         table.insert(choices, {
             id = tostring(idx),
             label = wezterm.format(cells:render({ 'icon_ssh', 'label_text' })),
@@ -75,9 +72,9 @@ local function build_choices()
         idx = idx + 1
     end
 
-    -- Add Unix domains
     for _, v in ipairs(domains.unix_domains) do
         cells:update_segment_text('label_text', v.name)
+
         table.insert(choices, {
             id = tostring(idx),
             label = wezterm.format(cells:render({ 'icon_unix', 'label_text' })),
@@ -94,7 +91,6 @@ end
 local choices, choices_data = build_choices()
 
 M.setup = function()
-    -- Early return if disabled (setup-only guard)
     if not Features.is_enabled('new-tab-button') then
         return
     end

@@ -1,29 +1,32 @@
 local Config = require('config')
 local wezterm = require('wezterm')
-local act = wezterm.action
 local Features = require('config.features')
-
--- Load and apply user configuration from JSON FIRST
-local user_config = Features.load_user_config()
-if user_config then
-    wezterm.log_info('Loading user config from config/user.json')
-    Features.apply_config(user_config)
-else
-    wezterm.log_info('No user config found at config/user.json. Using defaults.')
-end
-
--- Load command palette AFTER config is applied
 local command_palette = require('config.command-palette')
 
+-- Check if user config exists once at startup
+local ok, user_config = pcall(require, 'config.user')
+
+if not ok then
+    wezterm.log_info('No user config found at config/user.lua. Using defaults.')
+    wezterm.log_info('Copy config/user.lua.example to config/user.lua to customize.')
+end
+
+-- Load and apply user config once if it exists
+if ok then
+    user_config:apply()
+end
+
 require('utils.backdrops')
-    -- :set_focus("#000000")
-    -- :set_images(wezterm.home_dir .. '/Pictures/Wallpapers/')
     :set_images()
     :random()
 
 require('events.left-status').setup()
 
-local user_opts = Features.get_custom_settings()
+local user_opts = {}
+pcall(function()
+    local user_config = require('config.user')
+    user_opts = user_config.custom or {}
+end)
 
 require('events.right-status').setup({
     date_format = user_opts.date_format or '%a %H:%M:%S',
@@ -40,11 +43,19 @@ require('events.tab-title').setup({
 require('events.new-tab-button').setup()
 require('events.gui-startup').setup()
 
-wezterm.on('toggle-feature', function(window, _pane, feature_name)
+-- local CwdUtil = require('utils.cwd')
+-- CwdUtil.add_alias('/Users/kei/projects', '📁 projects')
+-- CwdUtil.add_alias('/Users/kei/.config', '⚙️ config')
+-- CwdUtil.add_alias('/var/log', '📋 logs')
+
+wezterm.on('toggle-feature', function(window, pane, feature_name)
     if not feature_name then
         return
     end
-    Features.toggle(feature_name)
+
+    local new_state = Features.toggle(feature_name)
+    wezterm.log_info('Feature ' .. feature_name .. ': ' .. (new_state and 'enabled' or 'disabled'))
+    window:toast_notification('Feature ' .. feature_name .. ': ' .. (new_state and 'enabled' or 'disabled'))
 end)
 
 wezterm.on('augment-command-palette', function(_window, _pane)

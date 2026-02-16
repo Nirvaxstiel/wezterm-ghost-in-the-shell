@@ -5,7 +5,6 @@ local Features = require('config.features')
 local M = {}
 
 M.setup = function()
-    -- Early return if disabled (setup-only, no need to check in handler)
     if not Features.is_enabled('gui-startup') then
         return
     end
