@@ -60,8 +60,9 @@ local gits = {
     success = '#00ff9f',
     info = '#26c6da',
 
-    selectionBg = '#1a2332',
-    selectionFg = '#b3e5fc',
+    -- selectionBg = '#1a2332',
+    selectionBg = 'rgba(220, 20, 60, 0.7)',
+    selectionFg = '#1a2332',
 
     border = '#1a2332',
     borderActive = '#ff1493',

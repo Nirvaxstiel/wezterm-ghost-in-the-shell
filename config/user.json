@@ -18,7 +18,7 @@
     "date-display": true,
     "exit-confirmation": true,
     "gui-startup": true,
-    "hyperlinks": false,
+    "hyperlinks": true,
     "last-active-tab": true,
     "left-status": true,
     "new-tab-button": true,
