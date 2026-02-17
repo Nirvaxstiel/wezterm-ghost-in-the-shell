@@ -1,6 +1,30 @@
 # Intent Routing Configuration
 # Defines how Tachikoma orchestrator routes tasks based on classified intent
-# Version: 1.1.0
+# Version: 1.1.3
+#
+# ⚠️  CRITICAL: Skill vs Subagent Distinction
+# -----------------------------------------
+# SKILL:    Guidance document that you LOAD and FOLLOW
+#           Usage: skill({ name: "code-agent" })
+#           Output: Returns <skill_content> block with instructions
+#           Then: Execute using tools directly (Edit, Read, Grep, etc.)
+#           Examples: code-agent, analysis-agent, research-agent
+#
+# SUBAGENT: Delegated worker that you INVOKE
+#           Usage: task(subagent_type="{name}", ...)
+#           Then: Wait for subagent to complete and return result
+#           Examples: rlm-subcall, rlm-optimized
+#
+# NEVER use task() for skills or skill() for subagents!
+# -----------------------------------------
+
+# SKILL CHAINS: Load multiple skills sequentially
+# Usage: Call skill() for each skill in the chain
+# Example:
+#   1. skill({ name: "code-agent" }) → execute
+#   2. skill({ name: "verifier-code-agent" }) → execute
+#   3. skill({ name: "formatter" }) → execute
+# -----------------------------------------
 
 # ============================================
 # INTENT ROUTES
@@ -15,6 +39,9 @@ routes:
       - 10-coding-standards
       - 12-commenting-rules  # COUPLED: Must load with coding-standards
     skill: code-agent
+    skill_load_instruction: 'skill({ name: "code-agent" })'
+    skill_usage: "Load skill, then follow its workflow (inspect→extract→validate→implement→verify→stop) using tools directly"
+    invoke_via: skill  # skill = load and follow | subagent = delegate
     tools:
       - Read
       - Grep
@@ -31,6 +58,9 @@ routes:
       - 10-coding-standards
       - 12-commenting-rules  # COUPLED: Must load with coding-standards
     skill: code-agent
+    skill_load_instruction: 'skill({ name: "code-agent" })'
+    skill_usage: "Load skill, then follow its workflow (inspect→extract→validate→implement→verify→stop) using tools directly"
+    invoke_via: skill
     tools:
       - Read
       - Write
@@ -49,6 +79,9 @@ routes:
       - 12-commenting-rules  # COUPLED: Must load with coding-standards
       - 30-research-methods
     skill: analysis-agent
+    skill_load_instruction: 'skill({ name: "analysis-agent" })'
+    skill_usage: "Load skill, then follow its analysis workflow using tools directly"
+    invoke_via: skill
     tools:
       - Read
       - Grep
@@ -64,6 +97,9 @@ routes:
       - 10-coding-standards
       - 12-commenting-rules  # COUPLED: Must load with coding-standards
     skill: code-agent
+    skill_load_instruction: 'skill({ name: "code-agent" })'
+    skill_usage: "Load skill, then follow its refactoring workflow using tools directly"
+    invoke_via: skill
     tools:
       - Read
       - Write
@@ -80,6 +116,9 @@ routes:
       - 00-core-contract
       - 30-research-methods
     skill: research-agent
+    skill_load_instruction: 'skill({ name: "research-agent" })'
+    skill_usage: "Load skill, then follow its research methodology using tools directly"
+    invoke_via: skill
     tools:
       - Read
       - WebFetch
@@ -95,6 +134,9 @@ routes:
       - 00-core-contract
       - 20-git-workflow
     skill: git-commit
+    skill_load_instruction: 'skill({ name: "git-commit" })'
+    skill_usage: "Load skill, then follow its git workflow using tools directly"
+    invoke_via: skill
     tools:
       - Bash
     strategy: direct
@@ -108,6 +150,9 @@ routes:
       - 00-core-contract
       - 12-commenting-rules  # Documentation includes code comments
     skill: self-learning
+    skill_load_instruction: 'skill({ name: "self-learning" })'
+    skill_usage: "Load skill, then follow its documentation workflow using tools directly"
+    invoke_via: skill
     tools:
       - Read
       - Write
@@ -122,6 +167,9 @@ routes:
       - 00-core-contract
     subagent: rlm-optimized
     fallback_subagent: rlm-subcall
+    subagent_invoke_instruction: "task(subagent_type='rlm-optimized', description='...', prompt='...')"
+    subagent_usage: "Delegate task to subagent and wait for completion"
+    invoke_via: subagent  # subagent = delegate via task() | skill = load and follow
     tools:
       - Read
     strategy: rlm
@@ -145,6 +193,9 @@ routes:
       - 10-coding-standards
       - 12-commenting-rules  # COUPLED: Must load with coding-standards
     skill: skill-composer
+    skill_load_instruction: 'skill({ name: "skill-composer" })'
+    skill_usage: "Load skill, then follow its composition workflow using tools directly"
+    invoke_via: skill
     tools:
       - Read
       - Grep
@@ -159,6 +210,9 @@ routes:
     context_modules:
       - 00-core-contract
     skill: context-manager
+    skill_load_instruction: 'skill({ name: "context-manager" })'
+    skill_usage: "Load skill, then follow its optimization workflow using tools directly"
+    invoke_via: skill
     tools:
       - Read
       - Bash
@@ -174,13 +228,16 @@ routes:
       - 10-coding-standards
       - 12-commenting-rules  # COUPLED: Must load with coding-standards
     skill: verifier-code-agent
+    skill_load_instruction: 'skill({ name: "verifier-code-agent" })'
+    skill_usage: "Load skill, then follow its verify workflow using tools directly"
+    invoke_via: skill
     tools:
       - Read
       - Write
       - Edit
       - Bash
     strategy: direct
-    notes: "Use for: complex implementations, security-critical code, high-stakes fixes. Based on Aletheia architecture (arXiv:2602.10177)"
+    notes: "Use for: complex implementations, security-critical code, high-stakes fixes."
 
   # Reflect: Explicit self-verification and reflection
   reflect:
@@ -191,12 +248,15 @@ routes:
       - 10-coding-standards
       - 12-commenting-rules  # COUPLED: Must load with coding-standards
     skill: reflection-orchestrator
+    skill_load_instruction: 'skill({ name: "reflection-orchestrator" })'
+    skill_usage: "Load skill, then follow its reflection workflow using tools directly"
+    invoke_via: skill
     tools:
       - Read
       - Write
       - Edit
     strategy: direct
-    notes: Use for complex reasoning, high-stakes decisions, confidence verification. Based on vibe-proving (arXiv:2602.03837)
+    notes: Use for complex reasoning, high-stakes decisions, and confidence verification.
 
   # Edit-Optimize: Model-aware edit format selection
   edit-optimize:
@@ -205,81 +265,106 @@ routes:
     context_modules:
       - 00-core-contract
     skill: model-aware-editor
+    skill_load_instruction: 'skill({ name: "model-aware-editor" })'
+    skill_usage: "Load skill, then use hashline processor for reliable edits"
+    invoke_via: skill
     tools:
       - Read
       - Write
       - Edit
     strategy: direct
-    notes: Use when experiencing edit failures, working with multiple models. Based on harness research (Can.ac Feb 2026)
+    notes: Use when experiencing edit failures or working with multiple models.
 
 # ============================================
-# SKILL CHAINS (Multi-Skill Orchestration)
+# WORKFLOWS (Sequential - pass context through each stage)
 # ============================================
-skill_chains:
-  # High-reliability implementation chain
+# ⚠️  WORKFLOW USAGE:
+# Skills execute SEQUENTIALLY - each skill sees the result of the previous.
+# Use when: implement → verify → format, or research → implement
+#
+# Execution:
+#   1. skill({ name: "code-agent" }) → executes → result
+#   2. skill({ name: "verifier-code-agent" }) → sees result → executes
+#   3. skill({ name: "formatter" }) → formats
+#
+# mode: sequential (default) - one after another
+# ============================================
+workflows:
+  # High-reliability implementation workflow
   implement-verify:
     description: "Implementation with verification loop"
-    skills:
-      - code-agent
-      - verifier-code-agent
-      - formatter
+    skills: [code-agent, verifier-code-agent, formatter]
     mode: sequential
     context_modules:
       - 00-core-contract
       - 10-coding-standards
-      - 12-commenting-rules  # COUPLED: Must load with coding-standards
+      - 12-commenting-rules
 
-  # Research-then-implement chain  
+  # Research-then-implement workflow  
   research-implement:
     description: "Research followed by implementation"
-    skills:
-      - research-agent
-      - context7
-      - code-agent
-      - formatter
+    skills: [research-agent, context7, code-agent, formatter]
     mode: sequential
     context_modules:
       - 00-core-contract
       - 10-coding-standards
-      - 12-commenting-rules  # COUPLED: Must load with coding-standards
+      - 12-commenting-rules
 
-  # High-stakes security chain
+  # High-stakes security workflow
   security-implement:
     description: "Security-critical implementation"
-    skills:
-      - context7
-      - code-agent
-      - verifier-code-agent
-      - reflection-orchestrator
+    skills: [context7, code-agent, verifier-code-agent, reflection-orchestrator]
     mode: sequential
     context_modules:
       - 00-core-contract
       - 10-coding-standards
-      - 12-commenting-rules  # COUPLED: Must load with coding-standards
+      - 12-commenting-rules
 
   # Review with reflection
   deep-review:
     description: "In-depth code review with self-verification"
-    skills:
-      - analysis-agent
-      - reflection-orchestrator
+    skills: [analysis-agent, reflection-orchestrator]
     mode: sequential
     context_modules:
       - 00-core-contract
       - 10-coding-standards
-      - 12-commenting-rules  # COUPLED: Must load with coding-standards
+      - 12-commenting-rules
 
-  # Complex research chain
+  # Complex research workflow
   complex-research:
     description: "Multi-source research with verification"
-    skills:
-      - research-agent
-      - context7
-      - reflection-orchestrator
+    skills: [research-agent, context7, reflection-orchestrator]
     mode: sequential
     context_modules:
       - 00-core-contract
       - 30-research-methods
+
+# ============================================
+# SKILLS BULK (All at once - inject all, agent decides)
+# ============================================
+# ⚠️  SKILLS BULK USAGE:
+# ALL skills are loaded at once into context.
+# Agent can use ANY of them as needed.
+# Use when: multi-tool tasks, agent decides what to use
+#
+# Execution:
+#   1. skill({ name: "code-agent" })
+#   2. skill({ name: "verifier-code-agent" })
+#   3. skill({ name: "formatter" })
+#   → Agent has ALL available, picks what to use
+# ============================================
+skills_bulk:
+  coding-all:
+    description: "All coding skills available"
+    skills: [code-agent, verifier-code-agent, formatter, reflection-orchestrator]
+
+  research-all:
+    description: "All research skills available"
+    skills: [research-agent, context7, analysis-agent]
+
+  full-stack:
+    description: "Full coding + research capabilities"
+    skills: [code-agent, verifier-code-agent, research-agent, context7, formatter, reflection-orchestrator]
 
 # ============================================
 # COMPOSITE INTENTS
@@ -366,3 +451,112 @@ module_priority:
   20-git-workflow: 20
   30-research-methods: 30
   50-prompt-safety: 50
+
+# ============================================
+# RESOURCE TYPE REFERENCE
+# ============================================
+# Quick lookup for skill vs subagent confusion
+#
+# SKILLS (Load with Read, execute yourself):
+#   code-agent:              .opencode/skills/code-agent/SKILL.md
+#   analysis-agent:          .opencode/skills/analysis-agent/SKILL.md
+#   research-agent:          .opencode/skills/research-agent/SKILL.md
+#   verifier-code-agent:     .opencode/skills/verifier-code-agent/SKILL.md
+#   model-aware-editor:      .opencode/skills/model-aware-editor/SKILL.md
+#   reflection-orchestrator: .opencode/skills/reflection-orchestrator/SKILL.md
+#   skill-composer:          .opencode/skills/skill-composer/SKILL.md
+#   context-manager:         .opencode/skills/context-manager/SKILL.md
+#   context7:                .opencode/skills/context7/SKILL.md
+#   formatter:               .opencode/skills/formatter/SKILL.md
+#   git-commit:              .opencode/skills/git-commit/SKILL.md
+#   self-learning:           .opencode/skills/self-learning/SKILL.md
+#
+# WORKFLOWS (Sequential - pass context through each stage):
+#   Skills execute SEQUENTIALLY - each skill sees result of previous
+#   Example: implement-verify workflow
+#     1. skill({ name: "code-agent" }) → execute
+#     2. skill({ name: "verifier-code-agent" }) → sees result → execute
+#     3. skill({ name: "formatter" }) → format
+#
+# SKILLS BULK (All at once - inject all, agent decides):
+#   ALL skills loaded at once, agent picks what to use
+#   Example:
+#     1. skill({ name: "code-agent" })
+#     2. skill({ name: "verifier-code-agent" })
+#     3. skill({ name: "formatter" })
+#     → Agent has ALL available, uses as needed
+#
+# SUBAGENTS (Delegate with task()):
+#   rlm-subcall:    task(subagent_type='rlm-subcall', ...)
+#   rlm-optimized:  task(subagent_type='rlm-optimized', ...)
+#
+# RULES:
+#   If route has 'skill:' key → use skill() to load
+#   If route has 'subagent:' key → use task() to delegate
+#   If route matches a workflow → execute skills sequentially
+#   If route matches skills_bulk → load all skills at once
+# ============================================
+
+# ============================================
+# INTENT DETECTION KEYWORDS
+# Used by CLI router for fast pattern matching
+# ============================================
+intent_keywords:
+  debug:
+    - "fix"
+    - "debug"
+    - "broken"
+    - "error"
+    - "bug"
+    - "issue"
+    - "not working"
+
+  implement:
+    - "add"
+    - "implement"
+    - "create"
+    - "write"
+    - "build"
+    - "make"
+    - "feature"
+
+  review:
+    - "review"
+    - "audit"
+    - "check"
+    - "analyze"
+    - "quality"
+    - "assess"
+
+  research:
+    - "research"
+    - "find"
+    - "investigate"
+    - "look up"
+    - "search"
+    - "discover"
+
+  git:
+    - "git"
+    - "commit"
+    - "push"
+    - "pull"
+    - "merge"
+    - "branch"
+    - "pr"
+
+  document:
+    - "document"
+    - "docs"
+    - "readme"
+    - "explain"
+    - "learn"
+    - "remember"
+
+  complex:
+    - "complex"
+    - "large"
+    - "many files"
+    - "refactor"
+    - "redesign"
+    - "architecture"
