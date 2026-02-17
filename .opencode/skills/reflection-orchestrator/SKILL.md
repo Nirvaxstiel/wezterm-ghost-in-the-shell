@@ -17,7 +17,8 @@ tools:
 
 # Reflection Orchestrator
 
-> **Key Pattern**: "Vibe-proving" - adversarial self-correction through iterative refinement
+Implements explicit self-verification and reflection for reliable outputs with adversarial self-correction methodology.
+
 > **Notation**: `@skill-name` means "invoke that skill and wait for completion" - for skill chaining
 
 ## Core Concept
