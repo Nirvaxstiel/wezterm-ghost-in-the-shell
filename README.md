@@ -66,6 +66,7 @@ Edit `config/user.json` directly:
 ### Available Features
 
 #### UI Components
+
 - ✓ `left-status` - Left status bar (key table indicator)
 - ✓ `right-status` - Right status bar (workspace, cwd, battery, date)
 - ✓ `workspace-display` - Show workspace name in right status
@@ -77,6 +78,7 @@ Edit `config/user.json` directly:
 - ✓ `gui-startup` - Maximize window on startup
 
 #### Visual Effects
+
 - ✓ `backdrops` - Background images with blur effects
 - ✓ `background-blur` - Background blur effects (platform-specific)
 - ✓ `animations` - UI animations (cursor blink, etc.)
@@ -85,6 +87,7 @@ Edit `config/user.json` directly:
 - ✓ `scroll-bar` - Scroll bar on right
 
 #### Functionality
+
 - ✓ `scrollback` - Scrollback buffer (default: 20000 lines)
 - ✓ `hyperlinks` - Clickable hyperlinks in terminal
 - ✓ `command-palette` - Command palette (F2)
@@ -92,6 +95,7 @@ Edit `config/user.json` directly:
 - ✓ `exit-confirmation` - Window close confirmation
 
 #### Tab Features
+
 - ✗ `tab-index` - Show tab index numbers
 - ✓ `tab-title` - Custom tab titles with process icons
 - ✓ `last-active-tab` - Switch to last active tab when closing tab
@@ -101,6 +105,7 @@ Edit `config/user.json` directly:
 ### Feature Dependencies
 
 Some features depend on others:
+
 - `workspace-display` depends on `right-status`
 - `cwd-display` depends on `right-status`
 - `battery-display` depends on `right-status`
@@ -116,22 +121,22 @@ If you disable a parent feature, all its children will also be disabled.
 
 Custom actions available via command palette:
 
-| Action | Description |
-|--------|-------------|
-| Activate Copy Mode | Activate copy mode |
-| Toggle Fullscreen | Toggle fullscreen |
-| Show Debug Overlay | Show debug overlay |
-| Search Text | Search text (case-insensitive) |
-| **Toggle Feature** | Select and toggle any feature (persisted to config/user.lua) |
-| Spawn Tab (Default) | Create new tab |
-| Close Current Tab | Close active tab |
-| Toggle Tab Bar | Show/hide tab bar |
-| Maximize Window | Maximize window |
-| Split Vertical | Split pane vertically |
-| Split Horizontal | Split pane horizontally |
-| Toggle Pane Zoom | Zoom pane |
-| Move to Pane | Navigate to pane (up/down/left/right) |
-| Scroll Up/Down | Scroll 5 lines |
+| Action              | Description                                                  |
+| ------------------- | ------------------------------------------------------------ |
+| Activate Copy Mode  | Activate copy mode                                           |
+| Toggle Fullscreen   | Toggle fullscreen                                            |
+| Show Debug Overlay  | Show debug overlay                                           |
+| Search Text         | Search text (case-insensitive)                               |
+| **Toggle Feature**  | Select and toggle any feature (persisted to config/user.lua) |
+| Spawn Tab (Default) | Create new tab                                               |
+| Close Current Tab   | Close active tab                                             |
+| Toggle Tab Bar      | Show/hide tab bar                                            |
+| Maximize Window     | Maximize window                                              |
+| Split Vertical      | Split pane vertically                                        |
+| Split Horizontal    | Split pane horizontally                                      |
+| Toggle Pane Zoom    | Zoom pane                                                    |
+| Move to Pane        | Navigate to pane (up/down/left/right)                        |
+| Scroll Up/Down      | Scroll 5 lines                                               |
 
 ---
 
@@ -139,15 +144,15 @@ Custom actions available via command palette:
 
 Custom color palette inspired by **Ghost in the Shell** and **Blade Runner**:
 
-| Color | Hex | Usage |
-|-------|-----|-------|
-| Background | `#0a0e14` | Main terminal bg |
-| Text | `#b3e5fc` | Primary text (cyan-tinted) |
-| Cyan | `#26c6da` | Holographic UI |
-| Green | `#00ff9f` | Matrix/success |
-| Crimson | `#dc143c` | Active tabs, alerts |
-| Hotpink | `#ff1493` | Warnings, highlights |
-| Teal | `#00d4aa` | Icons |
+| Color      | Hex       | Usage                      |
+| ---------- | --------- | -------------------------- |
+| Background | `#0a0e14` | Main terminal bg           |
+| Text       | `#b3e5fc` | Primary text (cyan-tinted) |
+| Cyan       | `#26c6da` | Holographic UI             |
+| Green      | `#00ff9f` | Matrix/success             |
+| Crimson    | `#dc143c` | Active tabs, alerts        |
+| Hotpink    | `#ff1493` | Warnings, highlights       |
+| Teal       | `#00d4aa` | Icons                      |
 
 See: [colors/custom.lua](./colors/custom.lua)
 
@@ -157,13 +162,14 @@ See: [colors/custom.lua](./colors/custom.lua)
 
 This config supports three background modes that can be toggled at runtime:
 
-| Mode | Description | Hotkey |
-|------|-------------|--------|
-| **Images** | Background images from `backdrops/` folder | `Super+,` / `Super+.` / `Super+/` |
-| **Transparent** | Semi-transparent solid color (no images) | `Super+n` |
-| **Focus** | Solid color, no image (max readability) | `Super+b` |
+| Mode            | Description                                | Hotkey                            |
+| --------------- | ------------------------------------------ | --------------------------------- |
+| **Images**      | Background images from `backdrops/` folder | `Super+,` / `Super+.` / `Super+/` |
+| **Transparent** | Semi-transparent solid color (no images)   | `Super+n`                         |
+| **Focus**       | Solid color, no image (max readability)    | `Super+b`                         |
 
 **Platform-specific blur:**
+
 - Windows: Acrylic effect
 - macOS: Background blur
 - Linux (KDE Wayland): `kde_window_background_blur`
@@ -178,17 +184,48 @@ This config supports three background modes that can be toggled at runtime:
 
 - **Theme**: Ghost in the Shell instead of Catppuccin
 - **Transparency**: Platform-aware backdrop blur/transparency
-- **Colors**: Crimson/hotpink accents throughout
 - **Background Modes**: Three modes - Images, Transparent, Focus
 - **Command Palette**: F2 (was F2 in original too, but now with custom actions)
 - **Feature Toggles**: Complete system with JSON-based persistence (was Lua-based)
-- **Config Format**: JSON instead of Lua for user configuration (safer, easier to edit)
+- **Config Format**: JSON instead of Lua for user configuration (easier to edit)
 
 ---
 
-## Quick Fix: Nushell on Windows
+## Installation
 
-If using Nushell on Windows, add to your Nushell config to prevent scrolling:
+### Requirements
+
+- WezTerm (minimum `20240127`, recommended [Nightly](https://github.com/wez/wezterm/releases/nightly))
+- JetBrainsMono Nerd Font (or any Nerd Font)
+
+### Quick Install
+
+```sh
+git clone https://https://github.com/Nirvaxstiel/wezterm-ghost-in-the-shell.git ~/.config/wezterm
+```
+
+### Platform Installers
+
+**Windows:** `scoop install wezterm` / `winget install wez.wezterm` / `choco install wezterm`  
+**macOS:** `brew install --cask wezterm`  
+**Linux:** See [wezfurlong.org/wezterm/install/linux.html](https://wezfurlong.org/wezterm/install/linux.html)
+
+### Font
+
+**macOS:** `brew tap homebrew/cask-fonts && brew install font-jetbrains-mono-nerd-font`  
+**Windows:** `scoop bucket add nerd-fonts && scoop install JetBrainsMono-NF`
+
+### First-Time Setup
+
+Customize as needed:
+
+- [config/domains.lua](./config/domains.lua) - SSH/WSL domains
+- [config/launch.lua](./config/launch.lua) - Shell paths
+
+### Common Issues
+
+**Nushell on Windows:** Add to Nushell config to prevent scrolling:
+
 ```nu
 $env.config.shell_integration.osc133 = false
 ```
@@ -204,20 +241,12 @@ If Git Bash fails to launch with exit code 1, check the path in `config/launch.l
 - `C:\Program Files\Git\cmd\bash.exe` (if in PATH)
 
 If using Scoop's Git, you may need to wrap it with cmd.exe:
+
 ```lua
 args = {
     'cmd.exe', '/c',
     'set MSYS=pathtype=unix&& C:\\Users\\kevin\\scoop\\apps\\git\\current\\bin\\bash.exe -l'
 },
-```
-
----
-
-## Quick Fix: Nushell on Windows
-
-If using Nushell on Windows, add to your Nushell config to prevent scrolling:
-```nu
-$env.config.shell_integration.osc133 = false
 ```
 
 ---
