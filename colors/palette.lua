@@ -2,70 +2,70 @@
 -- Separate from colorscheme to avoid WezTerm validation errors
 
 local gits = {
-    bg0 = '#0a0e14',
-    bg1 = '#0d1117',
-    bg2 = '#13171f',
-    bg3 = '#1a2332',
-    bg5 = '#2d3640',
+    bg0 = '#0b0b14',
+    bg1 = '#0d0d1a',
+    bg2 = '#131322',
+    bg3 = '#1a1a33',
+    bg5 = '#2d2d4d',
 
-    text = '#b3e5fc',
-    textMuted = '#4a5f6d',
-    textMuted2 = '#6b8e9e',
+    text = '#e41951',
+    textMuted = '#c7c7c7',
+    textMuted2 = '#686868',
 
-    cyan = '#26c6da',
-    green = '#00ff9f',
+    cyan = '#00c5c7',
+    green = '#00dc84',
     teal = '#00d4aa',
-    red = '#ff0066',
+    red = '#ff0051',
     orange = '#ffa726',
 
-    crimson = '#dc143c',
-    hotpink = '#ff1493',
-    magenta = '#ff00ff',
+    crimson = '#ff0051',
+    hotpink = '#e41951',
+    magenta = '#ca30c7',
     blood = '#8a0303',
-    rose = '#ff69b4',
+    rose = '#ff6e67',
 
-    black = '#0a0e14',
-    white = '#b3e5fc',
+    black = '#101116',
+    white = '#c7c7c7',
     crust = '#070a0d',
 
-    tabBgDefault = '#2d3640',
-    tabBgHover = '#4a5f6d',
-    tabBgActive = '#ff0066',
-    tabFgDefault = '#b3e5fc',
-    tabFgHover = '#ff69b4',
-    tabFgActive = '#0a0e14',
+    tabBgDefault = '#131322',
+    tabBgHover = '#2d2d4d',
+    tabBgActive = '#ff0051',
+    tabFgDefault = '#c7c7c7',
+    tabFgHover = '#e41951',
+    tabFgActive = '#0b0b14',
 
-    statusDate = '#26c6da',
-    statusBattery = '#dc143c',
-    statusSeparator = '#ff1493',
+    statusDate = '#00c5c7',
+    statusBattery = '#ff0051',
+    statusSeparator = '#e41951',
 
     iconTerminal = '#00d4aa',
-    iconWsl = '#dc143c',
-    iconSsh = '#ff1493',
+    iconWsl = '#ff0051',
+    iconSsh = '#e41951',
     iconUnix = '#00d4aa',
 
-    keyIndicatorBg = '#dc143c',
+    keyIndicatorBg = '#ff0051',
     keyIndicatorFg = '#ffffff',
 
     -- Program icon colors
-    iconLang = '#00ff9f',        -- Green for languages
-    iconTool = '#26c6da',         -- Cyan for tools
-    iconDevOps = '#ffa726',       -- Orange for DevOps
-    iconEditor = '#ff69b4',       -- Pink for editors
-    iconSystem = '#8ecae6',       -- Light blue for system tools
-    iconDefault = '#4a5f6d',     -- Gray for unknown programs,
+    iconLang = '#00dc84',    -- green
+    iconTool = '#00c5c7',    -- cyan
+    iconDevOps = '#ffa726',  -- orange
+    iconEditor = '#e41951',  -- hot pink
+    iconSystem = '#8ecae6',  -- kept original (light blue)
+    iconDefault = '#686868', -- Gray for unknown programs,
 
-    alert = '#dc143c',
-    warning = '#ff1493',
-    success = '#00ff9f',
-    info = '#26c6da',
+    alert = '#ff0051',
+    warning = '#e41951',
+    success = '#00dc84',
+    info = '#00c5c7',
 
     -- selectionBg = '#1a2332',
-    selectionBg = 'rgba(220, 20, 60, 0.7)',
-    selectionFg = '#1a2332',
+    selectionBg = 'rgba(220, 20, 60, 0.5)',
+    selectionFg = '#0b0b14',
 
-    border = '#1a2332',
-    borderActive = '#ff1493',
+    border = '#1a1a33',
+    borderActive = '#e41951',
 }
 
 return gits
