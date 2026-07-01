@@ -26,7 +26,7 @@ fi
 CHECK_ONLY=0
 [[ "${1:-}" == "--check" ]] && CHECK_ONLY=1
 
-# Find blobs over MAX_SIZE in history (whitespace-safe via --batch-check)
+# Find blobs over MAX_SIZE in history
 STALE=$(git rev-list --objects --all \
   | git cat-file --batch-check='%(objecttype) %(objectsize) %(objectname) %(rest)' \
   | awk -v max="$MAX_SIZE" '$1=="blob" && $2 > max {print $3" "$2" "$4}')
@@ -47,22 +47,22 @@ if [[ "$CHECK_ONLY" -eq 1 ]]; then
   exit 0
 fi
 
+# Save remotes before filter-repo strips them
+REMOTE_FILE=$(mktemp)
+git remote -v | awk '{print $1"\t"$2}' | sort -u > "$REMOTE_FILE"
+
 echo ""
 echo "Rewriting history to strip blobs over 4MB..."
 git filter-repo --force --strip-blobs-bigger-than "${MAX_SIZE}" 2>&1
 
-# filter-repo strips all remotes — re-add them
-for remote in origin codeberg gitlab; do
-  case "$remote" in
-    origin)   url="git@github.com:Nirvaxstiel/wezterm-ghost-in-the-shell.git" ;;
-    codeberg) url="ssh://git@codeberg.org/Nirvaxstiel/wezterm-ghost-in-the-shell.git" ;;
-    gitlab)   url="git@gitlab.com:Nirvaxstiel/wezterm-ghost-in-the-shell.git" ;;
-  esac
-  if ! git remote get-url "$remote" >/dev/null 2>&1; then
-    git remote add "$remote" "$url"
-    echo "Re-added $remote remote."
+# Restore remotes from snapshot
+while IFS=$'\t' read -r name url; do
+  if ! git remote get-url "$name" >/dev/null 2>&1; then
+    git remote add "$name" "$url"
+    echo "Re-added $name remote."
   fi
-done
+done < "$REMOTE_FILE"
+rm -f "$REMOTE_FILE"
 
 # Prune stale remote-tracking refs, reflog, filter-repo metadata, then repack
 echo "Pruning stale refs and repacking..."
