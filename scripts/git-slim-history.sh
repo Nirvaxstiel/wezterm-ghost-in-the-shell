@@ -51,18 +51,27 @@ echo ""
 echo "Rewriting history to strip blobs over 4MB..."
 git filter-repo --force --strip-blobs-bigger-than "${MAX_SIZE}" 2>&1
 
-# filter-repo strips origin remote — re-add if missing
-if ! git remote get-url origin >/dev/null 2>&1; then
-  git remote add origin git@github.com:Nirvaxstiel/wezterm-ghost-in-the-shell.git
-  echo "Re-added origin remote."
-fi
+# filter-repo strips all remotes — re-add them
+for remote in origin codeberg gitlab; do
+  case "$remote" in
+    origin)   url="git@github.com:Nirvaxstiel/wezterm-ghost-in-the-shell.git" ;;
+    codeberg) url="ssh://git@codeberg.org/Nirvaxstiel/wezterm-ghost-in-the-shell.git" ;;
+    gitlab)   url="git@gitlab.com:Nirvaxstiel/wezterm-ghost-in-the-shell.git" ;;
+  esac
+  if ! git remote get-url "$remote" >/dev/null 2>&1; then
+    git remote add "$remote" "$url"
+    echo "Re-added $remote remote."
+  fi
+done
 
-# Prune stale remote-tracking refs and repack (filter-repo leaves old refs)
+# Prune stale remote-tracking refs, reflog, filter-repo metadata, then repack
 echo "Pruning stale refs and repacking..."
 git for-each-ref --format='%(refname)' refs/remotes/ | while read -r ref; do
   git update-ref -d "$ref"
 done
 git reflog expire --expire=now --all
+rm -rf .git/filter-repo
+rm -f .git/ORIG_HEAD
 git gc --prune=now --aggressive
 
 echo ""
