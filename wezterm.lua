@@ -56,5 +56,4 @@ return Config:init()
     :append(require('config.general'))
     :append(require('config.launch'))
     :append(require('config.multiplexer'))
-    :append(require('config.sockets'))
-    .options
+    :append(require('config.sockets')).options
