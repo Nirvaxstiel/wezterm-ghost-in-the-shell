@@ -30,6 +30,10 @@ function Features.set_enabled(name, enabled)
         wezterm.log_warn('Feature not found: ' .. name)
         return false
     end
+    if type(enabled) ~= 'boolean' then
+        wezterm.log_warn('Feature ' .. name .. ': expected boolean, got ' .. type(enabled) .. ' (' .. tostring(enabled) .. ')')
+        return false
+    end
     feature.enabled = enabled
     return true
 end
@@ -122,7 +126,11 @@ function Features.apply_config(config)
     -- Apply feature states
     if config.features then
         for name, enabled in pairs(config.features) do
-            Features.set_enabled(name, enabled)
+            if type(enabled) == 'boolean' then
+                Features.set_enabled(name, enabled)
+            else
+                wezterm.log_warn('Feature ' .. name .. ': ignoring non-boolean value ' .. tostring(enabled))
+            end
         end
     end
 end
@@ -249,7 +257,15 @@ function Features.get_palette_items()
     end)
 
     for _, feature in ipairs(features) do
-        local status_icon = feature.enabled and '✓ ' or '✗ '
+        local effective = feature.enabled
+        for _, dep in ipairs(feature.dependencies) do
+            local dep_feature = Features.get(dep)
+            if not (dep_feature and dep_feature.enabled) then
+                effective = false
+                break
+            end
+        end
+        local status_icon = effective and '✓ ' or '✗ '
         local deps = #feature.dependencies > 0 and ' [deps: ' .. table.concat(feature.dependencies, ', ') .. ']' or ''
         table.insert(items, {
             id = feature.name,
@@ -383,6 +399,11 @@ Features.register('tab-title', {
 Features.register('last-active-tab', {
     description = 'Switch to last active tab when closing tab',
     enabled = true,
+})
+
+Features.register('window-state', {
+    description = 'Save and restore window position and size across restarts',
+    enabled = false,
 })
 
 return Features

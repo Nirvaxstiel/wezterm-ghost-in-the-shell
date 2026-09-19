@@ -16,7 +16,7 @@
     "cursor-blink": true,
     "cwd-display": true,
     "date-display": true,
-    "exit-confirmation": true,
+    "exit-confirmation": false,
     "gui-startup": true,
     "hyperlinks": true,
     "last-active-tab": true,
@@ -29,6 +29,7 @@
     "tab-index": true,
     "tab-title": true,
     "visual-bell": true,
+    "window-state": true,
     "workspace-display": true
   }
 }

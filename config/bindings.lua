@@ -57,7 +57,7 @@ if Features.is_enabled('hyperlinks') then
             patterns = {
                 '\\((https?://\\S+)\\)',
                 '\\[(https?://\\S+)\\]',
-                '\\{(https?://\\S+)\\)',
+                '\\{(https?://\\S+)\\}',
                 '<(https?://\\S+)>',
                 '\\bhttps?://\\S+[)/a-zA-Z0-9-]+'
             },
@@ -78,7 +78,9 @@ table.insert(keys, { key = 'v', mods = 'CTRL|SHIFT', action = act.PasteFrom('Cli
 
 if Features.is_enabled('tab-bar') then
     table.insert(keys, { key = 't', mods = mod.SUPER, action = act.SpawnTab('DefaultDomain') })
-    table.insert(keys, { key = 't', mods = mod.SUPER_REV, action = act.SpawnTab({ DomainName = 'wsl:ubuntu-fish' }) })
+    if platform.is_win then
+        table.insert(keys, { key = 't', mods = mod.SUPER_REV, action = act.SpawnTab({ DomainName = 'wsl:ubuntu-fish' }) })
+    end
     table.insert(keys, { key = 'w', mods = mod.SUPER_REV, action = act.CloseCurrentTab({ confirm = false }) })
 
     table.insert(keys, { key = '[', mods = mod.SUPER, action = act.ActivateTabRelative(-1) })

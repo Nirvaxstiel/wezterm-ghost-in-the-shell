@@ -26,7 +26,7 @@ require('events.right-status').setup({
     date_format = user_opts.date_format or '%a %H:%M:%S',
     show_workspace = Features.is_enabled('workspace-display'),
     show_cwd = Features.is_enabled('cwd-display'),
-    cwd_use_git_root = user_opts.cwd_use_git_root or true,
+    cwd_use_git_root = user_opts.cwd_use_git_root,
 })
 
 require('events.tab-title').setup({
@@ -36,6 +36,11 @@ require('events.tab-title').setup({
 
 require('events.new-tab-button').setup()
 require('events.gui-startup').setup()
+
+-- Window state persistence (save/restore window size on close/startup)
+if Features.is_enabled('window-state') then
+    require('utils.window-state').setup()
+end
 
 wezterm.on('toggle-feature', function(_window, _pane, feature_name)
     if not feature_name then

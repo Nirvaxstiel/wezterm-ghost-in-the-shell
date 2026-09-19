@@ -1,11 +1,7 @@
 local wezterm = require('wezterm')
 local Features = require('config.features')
 
-local user_opts = {}
-pcall(function()
-    local user_config = require('config.user')
-    user_opts = user_config.custom or {}
-end)
+local user_opts = Features.get_custom_settings()
 
 local config = {
     exit_behavior = 'CloseOnCleanExit', -- if shell program exited with a successful status
@@ -35,7 +31,7 @@ if Features.is_enabled('hyperlinks') then
             highlight = 1,
         },
         {
-            regex = '\\{(\\w+://\\S+)\\)',
+            regex = '\\{(\\w+://\\S+)\\}',
             format = '$1',
             highlight = 1,
         },
@@ -56,6 +52,8 @@ if Features.is_enabled('hyperlinks') then
 end
 
 if Features.is_enabled('exit-confirmation') then
+    config.window_close_confirmation = 'AlwaysPrompt'
+else
     config.window_close_confirmation = 'NeverPrompt'
 end
 

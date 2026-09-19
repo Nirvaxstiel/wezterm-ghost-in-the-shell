@@ -130,7 +130,7 @@ end
 ---@param focus_on boolean? focus mode on or off
 ---@return table|nil
 function BackDrops:initial_options(focus_on, transparent_on)
-    transparent_on = transparent_on or true
+    transparent_on = transparent_on == true
     assert(type(transparent_on) == 'boolean', 'BackDrops:initial_options - Expected a boolean')
 
     if transparent_on then
@@ -153,30 +153,29 @@ end
 ---@param window any WezTerm Window see: https://wezfurlong.org/wezterm/config/lua/window/index.html
 ---@param background_opts table background option
 function BackDrops:_set_opt(window, background_opts)
-    window:set_config_overrides({
-        background = background_opts,
-        enable_tab_bar = window:effective_config().enable_tab_bar,
-    })
+    local overrides = window:get_config_overrides() or {}
+    overrides.background = background_opts
+    overrides.enable_tab_bar = window:effective_config().enable_tab_bar
+    window:set_config_overrides(overrides)
 end
 
 ---Override the current window options for background with focus color
 ---@private
 ---@param window any WezTerm Window see: https://wezfurlong.org/wezterm/config/lua/window/index.html
 function BackDrops:_set_focus_opt(window)
-    local opts = {
-        background = {
-            {
-                source = { Color = self.focus_color },
-                height = '120%',
-                width = '120%',
-                vertical_offset = '-10%',
-                horizontal_offset = '-10%',
-                opacity = 1,
-            },
+    local overrides = window:get_config_overrides() or {}
+    overrides.background = {
+        {
+            source = { Color = self.focus_color },
+            height = '120%',
+            width = '120%',
+            vertical_offset = '-10%',
+            horizontal_offset = '-10%',
+            opacity = 1,
         },
-        enable_tab_bar = window:effective_config().enable_tab_bar,
     }
-    window:set_config_overrides(opts)
+    overrides.enable_tab_bar = window:effective_config().enable_tab_bar
+    window:set_config_overrides(overrides)
 end
 
 ---Convert the `files` array to a table of `InputSelector` choices

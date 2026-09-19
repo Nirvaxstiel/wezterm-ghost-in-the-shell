@@ -11,8 +11,6 @@ end
 
 local config = {
     front_end = 'OpenGL',
-    webgpu_power_preference = 'HighPerformance',
-    webgpu_preferred_adapter = gpu_adapters:pick_best(),
     underline_thickness = '1.5pt',
 
     colors = colors,
@@ -36,6 +34,11 @@ local config = {
         brightness = 1,
     },
 }
+
+if config.front_end == 'WebGpu' then
+    config.webgpu_power_preference = 'HighPerformance'
+    config.webgpu_preferred_adapter = gpu_adapters:pick_best()
+end
 
 if Features.is_enabled('animations') then
     config.max_fps = 120
@@ -67,14 +70,15 @@ if background_opts ~= nil then
     config.background = background_opts
 
     if Features.is_enabled('background-blur') then
+        config.window_background_opacity = 0.7
         if platform.is_win then
             config.win32_system_backdrop = 'Acrylic'
         elseif platform.is_mac then
             config.macos_window_background_blur = 20
         elseif platform.is_linux then
-            -- kde_window_background_blur only works on KDE Wayland
+            -- wayland_window_background_blur for modern Wayland compositors
             -- Other compositors: configure blur in compositor (Hyprland, picom, etc.)
-            config.kde_window_background_blur = true
+            config.wayland_window_background_blur = true
         end
     end
 end

@@ -212,8 +212,8 @@ local function create_title(base_title, max_width, inset)
     local icon_width = 2 -- space + icon (approximate)
 
     if title:len() + icon_width > max_width - inset then
-        local diff = title:len() + icon_width - max_width + inset
-        title = title:sub(1, title:len() - diff)
+        local diff = math.max(0, max_width - inset - 2)
+        title = wezterm.truncate_right(title, diff)
     else
         local padding = max_width - title:len() - icon_width - inset
         title = title .. string.rep(' ', padding)
@@ -429,10 +429,10 @@ M.setup = function(opts)
 
     wezterm.on('tabs.toggle-tab-bar', function(window, _pane)
         local effective_config = window:effective_config()
-        window:set_config_overrides({
-            enable_tab_bar = not effective_config.enable_tab_bar,
-            background = effective_config.background,
-        })
+        local overrides = window:get_config_overrides() or {}
+        overrides.enable_tab_bar = not effective_config.enable_tab_bar
+        overrides.background = effective_config.background
+        window:set_config_overrides(overrides)
     end)
 
     wezterm.on('format-tab-title', function(tab, _tabs, _panes, _config, hover, max_width)
