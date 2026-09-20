@@ -42,13 +42,6 @@ if Features.is_enabled('window-state') then
     require('utils.window-state').setup()
 end
 
-wezterm.on('toggle-feature', function(_window, _pane, feature_name)
-    if not feature_name then
-        return
-    end
-    Features.toggle(feature_name)
-end)
-
 wezterm.on('augment-command-palette', function(_window, _pane)
     return command_palette.items
 end)

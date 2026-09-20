@@ -48,4 +48,5 @@ opencode.json
 # Log files
 *.log
 config/user.lua
+config/user.json
 /window_state.json

@@ -80,12 +80,17 @@ function Features.toggle(name)
     end
 
     feature.enabled = not feature.enabled
-    Features.save_to_user_config()
+    if not Features.save_to_user_config() then
+        feature.enabled = not feature.enabled
+        return feature.enabled
+    end
+
+    wezterm.reload_configuration()
     return feature.enabled
 end
 
--- JSON file path for user config
 local USER_CONFIG_PATH = wezterm.config_dir .. '/config/user.json'
+wezterm.add_to_config_reload_watch_list(USER_CONFIG_PATH)
 
 -- Default custom settings
 local CUSTOM_DEFAULTS = {
@@ -179,14 +184,11 @@ function Features.save_to_user_config()
         custom = custom,
     }
 
-    local json_str = wezterm.json_encode(config)
+    local json_str = wezterm.serde.json_encode_pretty(config)
     if not json_str then
         wezterm.log_error('Failed to encode config to JSON')
         return false
     end
-
-    -- Pretty print the JSON
-    json_str = Features.pretty_json(json_str)
 
     local file = io.open(USER_CONFIG_PATH, 'w')
     if not file then
@@ -199,54 +201,6 @@ function Features.save_to_user_config()
 
     wezterm.log_info('Feature states saved to config/user.json')
     return true
-end
-
----Pretty print JSON string with indentation
----@param json_str string
----@return string
-function Features.pretty_json(json_str)
-    local result = {}
-    local indent = 0
-    local in_string = false
-    local escape = false
-
-    for i = 1, #json_str do
-        local char = json_str:sub(i, i)
-
-        if escape then
-            table.insert(result, char)
-            escape = false
-        elseif char == "\\" then
-            table.insert(result, char)
-            escape = true
-        elseif char == '"' then
-            table.insert(result, char)
-            in_string = not in_string
-        elseif in_string then
-            table.insert(result, char)
-        elseif char == "{" or char == "[" then
-            table.insert(result, char)
-            table.insert(result, "\n")
-            indent = indent + 1
-            table.insert(result, string.rep("  ", indent))
-        elseif char == "}" or char == "]" then
-            table.insert(result, "\n")
-            indent = indent - 1
-            table.insert(result, string.rep("  ", indent))
-            table.insert(result, char)
-        elseif char == "," then
-            table.insert(result, char)
-            table.insert(result, "\n")
-            table.insert(result, string.rep("  ", indent))
-        elseif char == ":" then
-            table.insert(result, char)
-            table.insert(result, " ")
-        else
-            table.insert(result, char)
-        end
-    end
-
-    return table.concat(result)
 end
 
 function Features.get_palette_items()

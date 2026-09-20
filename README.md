@@ -21,8 +21,8 @@ Features are registered in `config/features.lua` with a name, description, optio
 
 Two ways to toggle:
 
-- **F2** → command palette → "Toggle Feature" (runtime, persists to JSON)
-- **Edit `config/user.json` directly** — safe to hand-edit, reloads on config restart
+- **F2** → command palette → "Toggle Feature" (persists to `user.json`, then reloads config so the change takes effect immediately)
+- **Edit `config/user.json` directly** — safe to hand-edit, watched by wezterm's config reload
 
 Dependencies are checked at read time (`Features.is_enabled`), not at toggle time. A feature with a disabled parent shows as disabled even if its own flag is on.
 
@@ -55,7 +55,7 @@ Available features (default state):
 | Feature | Default | Notes |
 |---|---|---|
 | `scrollback` | on | 20000 lines default |
-| `hyperlinks` | on | Clickable URLs |
+| `hyperlinks` | on | Clickable URLs (`wezterm.default_hyperlink_rules()` + `{url}` braces) |
 | `command-palette` | on | F2 |
 | `auto-reload` | on | Config reloads on file change |
 | `exit-confirmation` | on | `AlwaysPrompt` |
@@ -66,7 +66,7 @@ Available features (default state):
 | `tab-index` | off | |
 | `tab-title` | on | Process icons, CJK-safe truncation, unseen-output indicators |
 | `last-active-tab` | on | |
-| `window-state` | off | Save/restore window position + size |
+| `window-state` | off | Save/restore window size (wezterm exposes no window position API) |
 
 
 

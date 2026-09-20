@@ -11,7 +11,6 @@ M.setup = function()
     end
 
     wezterm.on('gui-startup', function(cmd)
-        -- When window-state is enabled, restore from saved state instead of maximizing
         if Features.is_enabled('window-state') then
             local state = window_state.setup_startup()
             local opts = cmd or {}
@@ -20,21 +19,13 @@ M.setup = function()
                 opts.height = math.floor((state.pixel_height or 800) / 18)
             end
             local _, _, window = mux.spawn_window(opts)
-            if state and window then
-                local gui = window:gui_window()
-                if gui then
-                    if state.pixel_width then
-                        gui:set_inner_size(state.pixel_width, state.pixel_height)
-                    end
-                    if state.x and state.y then
-                        gui:set_position(state.x, state.y)
-                    end
-                end
+            local gui = window and window:gui_window()
+            if state and gui then
+                window_state.restore_size(gui, state)
             end
             return
         end
 
-        -- Default maximize behavior when window-state is off
         if Features.is_enabled('gui-startup') then
             local _, _, window = mux.spawn_window(cmd or {})
             window:gui_window():maximize()

@@ -54,13 +54,7 @@ if Features.is_enabled('hyperlinks') then
         mods = mod.SUPER_REV,
         action = wezterm.action.QuickSelectArgs({
             label = 'open url',
-            patterns = {
-                '\\((https?://\\S+)\\)',
-                '\\[(https?://\\S+)\\]',
-                '\\{(https?://\\S+)\\}',
-                '<(https?://\\S+)>',
-                '\\bhttps?://\\S+[)/a-zA-Z0-9-]+'
-            },
+            patterns = require('utils.url-patterns'),
             action = wezterm.action_callback(function(window, pane)
                 local url = window:get_selection_text_for_pane(pane)
                 wezterm.log_info('opening: ' .. url)
