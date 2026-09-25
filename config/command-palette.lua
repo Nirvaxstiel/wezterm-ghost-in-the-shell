@@ -2,6 +2,7 @@ local wezterm = require('wezterm')
 local act = wezterm.action
 local backdrops = require('utils.backdrops')
 local Features = require('config.features')
+local theme = require('colors.theme')
 
 local M = {}
 
@@ -11,6 +12,47 @@ M.items = {
     { brief = 'Toggle Fullscreen',  action = act.ToggleFullScreen },
     { brief = 'Show Debug Overlay', action = act.ShowDebugOverlay },
     { brief = 'Search Text',        action = act.Search({ CaseInSensitiveString = '' }) },
+    {
+        brief = 'Theme: Select (' .. theme.label .. ')',
+        action = wezterm.action_callback(function(window, pane)
+            window:perform_action(act.InputSelector({
+                title = 'Select Color Scheme',
+                choices = theme.choices(),
+                fuzzy = true,
+                fuzzy_description = 'Select Theme: ',
+                action = wezterm.action_callback(function(win, _, id)
+                    if not id then
+                        return
+                    end
+
+                    local ok, err = theme.select(id)
+                    if ok then
+                        win:toast_notification('Theme', 'Theme "' .. id .. '" is now active')
+                    else
+                        win:toast_notification('Theme', 'Switch failed: ' .. err)
+                    end
+                end),
+            }), pane)
+        end),
+    },
+    {
+        brief = 'Theme: Next',
+        action = wezterm.action_callback(function(window, _pane)
+            local ok, err = theme.cycle(1)
+            if not ok then
+                window:toast_notification('Theme', 'Switch failed: ' .. err)
+            end
+        end),
+    },
+    {
+        brief = 'Theme: Previous',
+        action = wezterm.action_callback(function(window, _pane)
+            local ok, err = theme.cycle(-1)
+            if not ok then
+                window:toast_notification('Theme', 'Switch failed: ' .. err)
+            end
+        end),
+    },
     {
         brief = 'Toggle Feature',
         action = wezterm.action_callback(function(window, pane)

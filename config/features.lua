@@ -93,13 +93,16 @@ local USER_CONFIG_PATH = wezterm.config_dir .. '/config/user.json'
 wezterm.add_to_config_reload_watch_list(USER_CONFIG_PATH)
 
 -- Default custom settings
-local CUSTOM_DEFAULTS = {
+Features.CUSTOM_DEFAULTS = {
+    theme = 'gits-scarlet',
     scrollback_lines = 20000,
     date_format = '%a %H:%M:%S',
     cwd_use_git_root = true,
     hide_active_tab_unseen = true,
     unseen_icon = 'circle',
 }
+
+local CUSTOM_DEFAULTS = Features.CUSTOM_DEFAULTS
 
 ---Load user configuration from JSON file
 ---@return table|nil config The loaded config, or nil if not found
@@ -161,7 +164,7 @@ function Features.get_custom_settings()
     return custom
 end
 
-function Features.save_to_user_config()
+function Features.build_user_config()
     local features = {}
 
     for name, feature in pairs(Features.registry) do
@@ -179,11 +182,15 @@ function Features.save_to_user_config()
         end
     end
 
-    local config = {
+    return {
         features = features,
         custom = custom,
     }
+end
 
+---@param config table The complete config table to persist
+---@return boolean ok
+function Features.write_user_config(config)
     local json_str = wezterm.serde.json_encode_pretty(config)
     if not json_str then
         wezterm.log_error('Failed to encode config to JSON')
@@ -201,6 +208,25 @@ function Features.save_to_user_config()
 
     wezterm.log_info('Feature states saved to config/user.json')
     return true
+end
+
+function Features.save_to_user_config()
+    return Features.write_user_config(Features.build_user_config())
+end
+
+---@param key string Custom setting name
+---@param value any Custom setting value
+---@return boolean ok, string|nil err
+function Features.set_custom_setting(key, value)
+    local config = Features.build_user_config()
+    config.custom[key] = value
+
+    if not Features.write_user_config(config) then
+        return false, 'failed to write config/user.json'
+    end
+
+    wezterm.reload_configuration()
+    return true, nil
 end
 
 function Features.get_palette_items()

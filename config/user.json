@@ -4,6 +4,7 @@
     "date_format": "%a %H:%M:%S",
     "hide_active_tab_unseen": true,
     "scrollback_lines": 20000,
+    "theme": "gits-scarlet",
     "unseen_icon": "circle"
   },
   "features": {

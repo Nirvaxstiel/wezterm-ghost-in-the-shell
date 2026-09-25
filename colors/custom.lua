@@ -1,81 +1,66 @@
-local gits = require('colors.palette')
+local theme = require('colors.theme')
 
-local colorscheme = {
-    foreground = gits.text,
-    background = gits.bg0,
+local r = theme.roles
 
-    cursor_bg = gits.cyan,
-    cursor_border = gits.cyan,
-    cursor_fg = gits.bg0,
+local colors = {
+    foreground = r.text,
+    background = r.bg0,
 
-    selection_bg = gits.selectionBg,
-    selection_fg = gits.selectionFg,
+    cursor_bg = r.cyan,
+    cursor_border = r.cyan,
+    cursor_fg = r.bg0,
 
-    ansi = {
-        '#2d3640',
-        gits.red,
-        gits.green,
-        gits.orange,
-        gits.cyan,
-        '#ff4d8a',
-        gits.teal,
-        '#8ecae6',
+    selection_bg = r.selectionBg,
+    selection_fg = r.selectionFg,
+
+    indexed = {
+        [16] = r.warning,
+        [17] = r.info,
     },
 
-    brights = {
-        '#4a5f6d',
-        '#ff66a3',
-        '#66ffb3',
-        '#ffd480',
-        '#80e5ee',
-        '#ff66a3',
-        '#80eed6',
-        '#ffffff',
-    },
+    scrollbar_thumb = r.bg3,
+    split = r.border,
+    visual_bell = r.alert,
+    compose_cursor = r.alert,
+
+    quick_select_label_bg = { Color = r.hotpink },
+    quick_select_label_fg = { Color = r.bg0 },
+    quick_select_match_bg = { Color = r.cyan },
+    quick_select_match_fg = { Color = r.bg0 },
+
+    copy_mode_active_highlight_bg = { Color = r.crimson },
+    copy_mode_active_highlight_fg = { Color = r.white },
+    copy_mode_inactive_highlight_bg = { Color = r.bg3 },
+    copy_mode_inactive_highlight_fg = { Color = r.text },
 
     tab_bar = {
-        background = 'rgba(10, 14, 20, 0.9)',
+        background = r.tabBarBg,
         active_tab = {
-            bg_color = gits.tabBgActive,
-            fg_color = gits.tabFgActive,
+            bg_color = r.tabBgActive,
+            fg_color = r.tabFgActive,
         },
         inactive_tab = {
-            bg_color = gits.bg1,
-            fg_color = gits.tabFgDefault,
+            bg_color = r.bg1,
+            fg_color = r.tabFgDefault,
         },
         inactive_tab_hover = {
-            bg_color = gits.tabBgHover,
-            fg_color = gits.tabFgHover,
+            bg_color = r.tabBgHover,
+            fg_color = r.tabFgHover,
         },
         new_tab = {
-            bg_color = gits.bg1,
-            fg_color = gits.tabFgDefault,
+            bg_color = r.bg1,
+            fg_color = r.tabFgDefault,
         },
         new_tab_hover = {
-            bg_color = gits.tabBgHover,
-            fg_color = gits.tabFgHover,
+            bg_color = r.tabBgHover,
+            fg_color = r.tabFgHover,
             italic = true,
         },
     },
-
-    visual_bell = gits.alert,
-    indexed = {
-        [16] = gits.warning,
-        [17] = gits.info,
-    },
-    scrollbar_thumb = gits.bg3,
-    split = gits.border,
-    compose_cursor = gits.alert,
-
-    quick_select_label_bg = { Color = gits.hotpink },
-    quick_select_label_fg = { Color = gits.bg0 },
-    quick_select_match_bg = { Color = gits.cyan },
-    quick_select_match_fg = { Color = gits.bg0 },
-
-    copy_mode_active_highlight_bg = { Color = gits.crimson },
-    copy_mode_active_highlight_fg = { Color = gits.white },
-    copy_mode_inactive_highlight_bg = { Color = gits.bg3 },
-    copy_mode_inactive_highlight_fg = { Color = gits.text },
 }
 
-return colorscheme
+for key, value in pairs(theme.wezterm) do
+    colors[key] = value
+end
+
+return colors

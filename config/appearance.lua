@@ -1,6 +1,7 @@
 local gpu_adapters = require('utils.gpu-adapter')
 local backdrops = require('utils.backdrops')
 local colors = require('colors.custom')
+local theme = require('colors.theme')
 local platform = require('utils.platform')
 local Features = require('config.features')
 
@@ -34,6 +35,10 @@ local config = {
         brightness = 1,
     },
 }
+
+for key, value in pairs(theme.config) do
+    config[key] = value
+end
 
 if config.front_end == 'WebGpu' then
     config.webgpu_power_preference = 'HighPerformance'
