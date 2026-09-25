@@ -13,11 +13,6 @@ local colors = {
     selection_bg = r.selectionBg,
     selection_fg = r.selectionFg,
 
-    indexed = {
-        [16] = r.warning,
-        [17] = r.info,
-    },
-
     scrollbar_thumb = r.bg3,
     split = r.border,
     visual_bell = r.alert,
