@@ -7,8 +7,7 @@
 This WezTerm config targets the nightly build. It uses a feature-toggle architecture (`Features.register` and the JSON-backed `user.json`). The config is in `config/`, the events are in `events/`, and the utilities are in `utils/`.
 
 <p align="center">
-  <img alt="demo" src=".github/screenshots/image.gif">
-  <img alt="demo" src=".github/screenshots/screenshot.png">
+  <img alt="demo" src=".github/screenshots/wezterm.gif">
 </p>
 
 ---
