@@ -82,6 +82,7 @@ if Features.is_enabled('hyperlinks') then
         action = wezterm.action.QuickSelectArgs({
             label = 'open url',
             patterns = require('utils.url-patterns'),
+            skip_action_on_paste = true,
             action = wezterm.action_callback(function(window, pane)
                 local url = window:get_selection_text_for_pane(pane)
                 wezterm.open_with(url)
