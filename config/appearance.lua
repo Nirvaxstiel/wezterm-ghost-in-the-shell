@@ -1,4 +1,3 @@
-local gpu_adapters = require('utils.gpu-adapter')
 local backdrops = require('utils.backdrops')
 local colors = require('colors.custom')
 local theme = require('colors.theme')
@@ -39,11 +38,6 @@ local config = {
 
 for key, value in pairs(theme.config) do
     config[key] = value
-end
-
-if config.front_end == 'WebGpu' then
-    config.webgpu_power_preference = 'HighPerformance'
-    config.webgpu_preferred_adapter = gpu_adapters:pick_best()
 end
 
 if Features.is_enabled('animations') then
