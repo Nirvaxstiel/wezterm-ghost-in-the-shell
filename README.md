@@ -63,7 +63,7 @@ The available features and their default states:
 | Feature | Default | Notes |
 |---|---|---|
 | `tab-index` | off | |
-| `tab-title` | on | Process icons, CJK-safe truncation, unseen-output indicators |
+| `tab-title` | on | Process icons, CJK-safe truncation, unseen-output and OSC 9;4 progress indicators |
 | `last-active-tab` | on | |
 | `window-state` | off | Save and restore the window size (WezTerm has no window position API) |
 
@@ -125,7 +125,7 @@ See `themes/gits-scarlet.lua` and `themes/gits-cyan.lua` for the complete role l
 ## Installation
 
 **Requirements:**
-- WezTerm nightly (or `20240127`+)
+- WezTerm nightly (20261026 or newer; the command palette line height and tab progress APIs are nightly-only)
 - JetBrainsMono Nerd Font (or any Nerd Font)
 
 ```sh
