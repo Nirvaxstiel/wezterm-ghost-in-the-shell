@@ -2,6 +2,7 @@ local gpu_adapters = require('utils.gpu-adapter')
 local backdrops = require('utils.backdrops')
 local colors = require('colors.custom')
 local theme = require('colors.theme')
+local fonts = require('config.fonts')
 local platform = require('utils.platform')
 local Features = require('config.features')
 
@@ -106,7 +107,9 @@ end
 if Features.is_enabled('command-palette') then
     config.command_palette_fg_color = colors.foreground
     config.command_palette_bg_color = colors.background
+    config.command_palette_font = fonts.font
     config.command_palette_font_size = 12
+    config.command_palette_line_height = 1.2
     config.command_palette_rows = 25
 end
 
