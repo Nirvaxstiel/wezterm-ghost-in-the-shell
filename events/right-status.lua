@@ -8,7 +8,6 @@ local Features = require('config.features')
 
 ---@alias Event.RightStatusOptions { date_format?: string, show_cwd?: boolean, cwd_use_git_root?: boolean, show_workspace?: boolean }
 
----Setup options for right status bar
 local EVENT_OPTS = {}
 
 ---@type OptsSchema
@@ -99,8 +98,6 @@ cells
 
 ---@return string, string
 local function battery_info()
-    -- ref: https://wezfurlong.org/wezterm/config/lua/wezterm/battery_info.html
-
     local charge = ''
     local icon = ''
 
@@ -127,7 +124,6 @@ M.setup = function(opts)
     end
 
     wezterm.on('update-right-status', function(window, pane)
-        -- Return early if right-status feature is disabled
         if not Features.is_enabled('right-status') then
             window:set_right_status('')
             return
@@ -135,10 +131,8 @@ M.setup = function(opts)
 
         local battery_text, battery_icon = battery_info()
 
-        -- Get workspace name
         local workspace_text = window:active_workspace() or ''
 
-        -- Get CWD if enabled
         local cwd_text = ''
         if Features.is_enabled('cwd-display') then
             local cwd_uri = pane:get_current_working_dir()
@@ -165,7 +159,6 @@ M.setup = function(opts)
             :update_segment_text('battery_icon', battery_icon)
             :update_segment_text('battery_text', battery_text)
 
-        -- Build segments list based on what's shown
         local segments = {}
 
         if Features.is_enabled('workspace-display') and workspace_text ~= '' then

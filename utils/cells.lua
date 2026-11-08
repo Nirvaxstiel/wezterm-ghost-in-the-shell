@@ -1,5 +1,3 @@
---
---[[ FormatItems: Begin ]]
 ---@class FormatItem.Text
 ---@field Text string
 
@@ -24,7 +22,6 @@
 ---@alias FormatItem.Reset 'ResetAttributes'
 
 ---@alias FormatItem FormatItem.Text|FormatItem.Attribute|FormatItem.Foreground|FormatItem.Background|FormatItem.Reset
---[[ FormatItems: End ]]
 
 local attr = {}
 
@@ -52,7 +49,7 @@ end
 ---@field has_bg boolean
 ---@field has_fg boolean
 
----Format item generator for `wezterm.format` (ref: <https://wezfurlong.org/wezterm/config/lua/wezterm/format.html>)
+---Format item generator for `wezterm.format`
 ---@class FormatCells
 ---@field segments table<string|number, FormatCells.Segment>
 local Cells = {}

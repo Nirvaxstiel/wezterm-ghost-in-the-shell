@@ -1,13 +1,10 @@
 local platform = require('utils.platform')
 
 local options = {
-    -- ref: https://wezfurlong.org/wezterm/config/lua/SshDomain.html
+    -- These three are the only domain types configured here. See
+    -- https://wezterm.org/multiplexing.html
     ssh_domains = {},
-
-    -- ref: https://wezfurlong.org/wezterm/multiplexing.html#unix-domains
     unix_domains = {},
-
-    -- ref: https://wezfurlong.org/wezterm/config/lua/WslDomain.html
     wsl_domains = {},
 }
 

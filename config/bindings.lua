@@ -19,24 +19,6 @@ local keys = {
     { key = 'F1', mods = 'NONE', action = 'ActivateCopyMode' },
 }
 
--- Add custom feature toggle hotkeys here:
---
--- Instant toggle:
--- { key = 'b', mods = mod.SUPER, action = wezterm.action_callback(function() Features.toggle('backdrops') end) }
---
--- Selector toggle:
--- { key = 'f', mods = mod.SUPER, action = act.InputSelector({
---     title = 'Toggle Feature',
---     choices = Features.get_palette_items(),
---     fuzzy = true,
---     action = wezterm.action_callback(function(_window, _pane, name)
---         if not name then return end
---         Features.toggle(name)
---     end)
--- }) }
---
--- Or use F2 command palette for full list.
-
 if Features.is_enabled('command-palette') then
     table.insert(keys, { key = 'F2', mods = 'NONE', action = act.ActivateCommandPalette })
 end

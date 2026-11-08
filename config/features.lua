@@ -92,7 +92,6 @@ end
 local USER_CONFIG_PATH = wezterm.config_dir .. '/config/user.json'
 wezterm.add_to_config_reload_watch_list(USER_CONFIG_PATH)
 
--- Default custom settings
 Features.CUSTOM_DEFAULTS = {
     theme = 'gits-scarlet',
     scrollback_lines = 20000,
@@ -104,7 +103,6 @@ Features.CUSTOM_DEFAULTS = {
 
 local CUSTOM_DEFAULTS = Features.CUSTOM_DEFAULTS
 
----Load user configuration from JSON file
 ---@return table|nil config The loaded config, or nil if not found
 function Features.load_user_config()
     local file = io.open(USER_CONFIG_PATH, 'r')
@@ -124,14 +122,12 @@ function Features.load_user_config()
     return config
 end
 
----Apply loaded configuration to features
 ---@param config table The configuration table with 'features' and 'custom' fields
 function Features.apply_config(config)
     if not config then
         return
     end
 
-    -- Apply feature states
     if config.features then
         for name, enabled in pairs(config.features) do
             if type(enabled) == 'boolean' then
@@ -143,18 +139,15 @@ function Features.apply_config(config)
     end
 end
 
----Get custom settings with defaults
 ---@return table Custom settings merged with defaults
 function Features.get_custom_settings()
     local config = Features.load_user_config()
     local custom = {}
 
-    -- Start with defaults
     for key, value in pairs(CUSTOM_DEFAULTS) do
         custom[key] = value
     end
 
-    -- Override with user settings if exists
     if config and config.custom then
         for key, value in pairs(config.custom) do
             custom[key] = value
@@ -171,11 +164,9 @@ function Features.build_user_config()
         features[name] = feature.enabled
     end
 
-    -- Load existing config to preserve custom settings
     local existing_config = Features.load_user_config()
     local custom = existing_config and existing_config.custom or {}
 
-    -- Ensure all defaults exist
     for key, default in pairs(CUSTOM_DEFAULTS) do
         if custom[key] == nil then
             custom[key] = default
@@ -256,7 +247,6 @@ function Features.get_palette_items()
     return items
 end
 
--- UI Components
 Features.register('left-status', {
     description = 'Left status bar (key table indicator)',
     enabled = true,
@@ -306,7 +296,6 @@ Features.register('gui-startup', {
     enabled = true,
 })
 
--- Visual Effects
 Features.register('backdrops', {
     description = 'Background images with blur effects',
     enabled = true,
@@ -339,7 +328,6 @@ Features.register('scroll-bar', {
     enabled = true,
 })
 
--- Functionality
 Features.register('scrollback', {
     description = 'Scrollback buffer (default: 20000 lines)',
     enabled = true,
@@ -365,7 +353,6 @@ Features.register('exit-confirmation', {
     enabled = true,
 })
 
--- Tab Features
 Features.register('tab-index', {
     description = 'Show tab index numbers',
     enabled = false,

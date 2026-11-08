@@ -3,9 +3,8 @@ local platform = require('utils.platform')
 local mux = {}
 
 if platform.is_win then
-   -- Windows OpenSSH uses named pipes, not Unix sockets.
-   -- WezTerm's mux agent creates a Unix domain socket and sets
-   -- SSH_AUTH_SOCK to it, which breaks native Windows ssh.
+   -- WezTerm's mux agent publishes a Unix domain socket and points SSH_AUTH_SOCK
+   -- at it. Windows OpenSSH uses named pipes, so forwarding breaks native ssh.
    mux.mux_enable_ssh_agent = false
 end
 

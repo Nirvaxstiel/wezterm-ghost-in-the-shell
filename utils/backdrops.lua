@@ -1,9 +1,7 @@
 local wezterm = require('wezterm')
 local colors = require('colors.custom')
 
--- Seeding random numbers before generating for use
--- Known issue with lua math library
--- see: https://stackoverflow.com/questions/20154991/generating-uniform-random-numbers-in-lua
+-- Lua's math.random needs a seed; without it every start picks the same image.
 math.randomseed(os.time())
 math.random()
 math.random()
@@ -20,7 +18,7 @@ local GLOB_PATTERN = '*.{jpg,jpeg,png,gif,bmp,ico,tiff,pnm,dds,tga}'
 local BackDrops = {}
 BackDrops.__index = BackDrops
 
---- Initialise backdrop controller
+---Initialise backdrop controller
 ---@private
 function BackDrops:init()
     local inital = {
@@ -53,9 +51,9 @@ end
 ---Sets the `images` after instantiating `BackDrops`.
 ---
 --- INFO:
----   During the initial load of the config, this function can only invoked in `wezterm.lua`.
+---   During the initial load of the config, this function can only be invoked in `wezterm.lua`.
 ---   WezTerm's fs utility `glob` (used in this function) works by running on a spawned child process.
----   This throws a coroutine error if the function is invoked in outside of `wezterm.lua` in the -
+---   This throws a coroutine error if the function is invoked outside of `wezterm.lua` in the
 ---   initial load of the Terminal config.
 function BackDrops:set_images()
     self.images = wezterm.glob(self.images_dir .. GLOB_PATTERN)
@@ -121,7 +119,6 @@ function BackDrops:_create_transparent_opts()
             opacity = 0.6,
             vertical_offset = '-10%',
             horizontal_offset = '-10%',
-            -- enable_tab_bar = window:effective_config().enable_tab_bar,
         }
     }
 end
@@ -150,7 +147,7 @@ end
 
 ---Override the current window options for background
 ---@private
----@param window any WezTerm Window see: https://wezfurlong.org/wezterm/config/lua/window/index.html
+---@param window any
 ---@param background_opts table background option
 function BackDrops:_set_opt(window, background_opts)
     local overrides = window:get_config_overrides() or {}
@@ -161,7 +158,7 @@ end
 
 ---Override the current window options for background with focus color
 ---@private
----@param window any WezTerm Window see: https://wezfurlong.org/wezterm/config/lua/window/index.html
+---@param window any
 function BackDrops:_set_focus_opt(window)
     local overrides = window:get_config_overrides() or {}
     overrides.background = {
@@ -179,7 +176,6 @@ function BackDrops:_set_focus_opt(window)
 end
 
 ---Convert the `files` array to a table of `InputSelector` choices
----see: https://wezfurlong.org/wezterm/config/lua/keyassignment/InputSelector.html
 function BackDrops:choices()
     local choices = {}
     for idx, file in ipairs(self.images) do
@@ -192,8 +188,7 @@ function BackDrops:choices()
 end
 
 ---Select a random background from the loaded `files`
----Pass in `Window` object to override the current window options
----@param window any? WezTerm `Window` see: https://wezfurlong.org/wezterm/config/lua/window/index.html
+---@param window any?
 function BackDrops:random(window)
     self.current_idx = math.random(#self.images)
 

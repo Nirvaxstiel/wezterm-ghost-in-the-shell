@@ -76,8 +76,6 @@ if background_opts ~= nil then
         elseif platform.is_mac then
             config.macos_window_background_blur = 20
         elseif platform.is_linux then
-            -- wayland_window_background_blur for modern Wayland compositors
-            -- Other compositors: configure blur in compositor (Hyprland, picom, etc.)
             config.wayland_window_background_blur = true
         end
     end

@@ -3,18 +3,16 @@ local wezterm = require('wezterm')
 local act = wezterm.action
 local Features = require('config.features')
 
--- Load and apply user configuration from JSON FIRST
+-- Feature state comes from config/user.json and must be applied before any
+-- module reads Features.is_enabled() at load time.
 local user_config = Features.load_user_config()
 if user_config then
     Features.apply_config(user_config)
 end
 
--- Load command palette AFTER config is applied
 local command_palette = require('config.command-palette')
 
 require('utils.backdrops')
-    -- :set_focus("#000000")
-    -- :set_images(wezterm.home_dir .. '/Pictures/Wallpapers/')
     :set_images()
     :random()
 
@@ -37,7 +35,6 @@ require('events.tab-title').setup({
 require('events.new-tab-button').setup()
 require('events.gui-startup').setup()
 
--- Window state persistence (save/restore window size on close/startup)
 if Features.is_enabled('window-state') then
     require('utils.window-state').setup()
 end
