@@ -2,6 +2,7 @@ local wezterm = require('wezterm')
 local act = wezterm.action
 local backdrops = require('utils.backdrops')
 local Features = require('config.features')
+local platform = require('utils.platform')
 local theme = require('colors.theme')
 
 local M = {}
@@ -93,7 +94,9 @@ end
 
 if Features.is_enabled('tab-bar') then
     table.insert(M.items, { brief = 'Spawn Tab (Default)',    action = act.SpawnTab('DefaultDomain') })
-    table.insert(M.items, { brief = 'Spawn Tab (WSL Ubuntu)', action = act.SpawnTab({ DomainName = 'wsl:ubuntu-fish' }) })
+    if platform.is_win then
+        table.insert(M.items, { brief = 'Spawn Tab (WSL Ubuntu)', action = act.SpawnTab({ DomainName = 'wsl:ubuntu-fish' }) })
+    end
     table.insert(M.items, { brief = 'Close Current Tab',      action = act.CloseCurrentTab({ confirm = true }) })
 
     table.insert(M.items, { brief = 'Next Tab',               action = act.ActivateTabRelative(1) })
