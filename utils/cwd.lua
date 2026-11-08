@@ -1,30 +1,38 @@
 local wezterm = require('wezterm')
-local gits = require('colors.palette')
-local nf = wezterm.nerdfonts
 
 local M = {}
 
 ---Path aliases - replace specific paths with custom text
 ---@type table<string, string>
 local PATH_ALIASES = {
-    -- Example: Replace long project paths with shorter names
-    -- ['/Users/kei/.config'] = '⚙️ config',
-    -- ['/Users/kei/projects'] = '📁 projects',
-    -- ['/var/log'] = '📋 logs',
+    -- ['~/.config'] = '⚙️ config',
+    -- ['~/projects'] = '📁 projects',
 }
 
----Find git directory starting from given directory and moving up the directory tree.
+---A directory is a repository root when it holds a `.git` directory or, for
+---worktrees and submodules, a `.git` file that points at the real one.
+---@param directory string
+---@return boolean
+local function is_git_root(directory)
+    for _, marker in ipairs({ directory .. '/.git/HEAD', directory .. '/.git' }) do
+        local handle = io.open(marker, 'r')
+        if handle then
+            handle:close()
+            return true
+        end
+    end
+    return false
+end
+
+---Find the name of the git repository root that contains `directory`.
 ---@param directory string
 ---@return string|nil
 local function find_git_dir(directory)
     directory = directory:gsub('~', wezterm.home_dir)
 
     while directory do
-        local handle = io.open(directory .. '/.git/HEAD', 'r')
-        if handle then
-            handle:close()
-            directory = directory:match('([^/]+)$')
-            return directory
+        if is_git_root(directory) then
+            return directory:match('([^/]+)$')
         elseif directory == '/' or directory == '' then
             break
         else
@@ -56,16 +64,12 @@ function M.get_cwd(cwd, opts)
         return ''
     end
 
-    -- Normalize path separators
     local path = cwd:gsub('\\', '/')
 
-    -- Replace home directory with ~
     path = path:gsub('^' .. wezterm.home_dir:gsub('\\', '/'), '~')
 
-    -- Apply path aliases
     path = apply_path_aliases(path)
 
-    -- Use git root if requested
     if opts.use_git_root and path:match('^~/') then
         local git_root = find_git_dir(path)
         if git_root then
@@ -73,12 +77,10 @@ function M.get_cwd(cwd, opts)
         end
     end
 
-    -- Show full path if requested
     if opts.show_full_path then
         return path
     end
 
-    -- Default: show abbreviated path (last 2 components)
     if path:match('^~/') then
         local filename = path:match('[^/]+$')
         local dirname = path:match('^~/(.*)/[^/]+$')
@@ -90,19 +92,15 @@ function M.get_cwd(cwd, opts)
             end
 
             if #parts > 2 then
-                -- ~/.../dir/file
                 return '~/' .. parts[#parts - 1] .. '/' .. filename
             elseif #parts > 0 then
-                -- ~/dir/file
                 return '~/' .. dirname .. '/' .. filename
             else
-                -- ~/file
                 return '~/' .. filename
             end
         end
         return '~/' .. (filename or path)
     else
-        -- Non-home paths: show last 2 components
         local parts = {}
         for part in path:gmatch('[^/]+') do
             table.insert(parts, part)
