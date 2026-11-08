@@ -173,7 +173,7 @@ if Features.is_enabled('backdrops') then
     })
     table.insert(keys, {
         key = 'n',
-        mods = mod.SUPER,
+        mods = mod.SUPER_REV,
         action = wezterm.action_callback(function(window, _pane)
             backdrops:enable_transparent(window)
         end)
