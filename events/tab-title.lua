@@ -37,19 +37,25 @@ local GLYPH_ADMIN = nf.md_shield_half_full
 local GLYPH_LINUX = nf.cod_terminal_linux
 local GLYPH_DEBUG = nf.fa_bug
 local GLYPH_SEARCH = '🔭'
+local GLYPH_PROGRESS_INDETERMINATE = nf.md_progress_clock
 
----Get icon for a process name
----@param process_name string
----@return string icon
-local function get_process_icon(process_name)
-    return ProgramIcons.get_process_icon(process_name)
-end
+---Eight slices cover a progress report of 0-100%.
+local GLYPH_PROGRESS = {
+    nf.md_circle_slice_1,
+    nf.md_circle_slice_2,
+    nf.md_circle_slice_3,
+    nf.md_circle_slice_4,
+    nf.md_circle_slice_5,
+    nf.md_circle_slice_6,
+    nf.md_circle_slice_7,
+    nf.md_circle_slice_8,
+}
 
----Get color for a process name
----@param process_name string
----@return string color
-local function get_process_color(process_name)
-    return ProgramIcons.get_process_color(process_name)
+---@param percent number
+---@return string
+local function progress_glyph(percent)
+    local slot = math.floor(percent / 12) + 1
+    return GLYPH_PROGRESS[math.min(slot, #GLYPH_PROGRESS)]
 end
 
 local GLYPH_UNSEEN_NUMBERED_BOX = {
@@ -83,15 +89,6 @@ local TITLE_INSET = {
     ICON = 8,
 }
 
-local RENDER_VARIANTS = {
-    { 'scircle_left', 'icon', 'title', 'padding',       'scircle_right' },
-    { 'scircle_left', 'icon', 'title', 'unseen_output', 'padding',       'scircle_right' },
-    { 'scircle_left', 'icon', 'admin', 'title',         'padding',       'scircle_right' },
-    { 'scircle_left', 'icon', 'admin', 'title',         'unseen_output', 'padding',      'scircle_right' },
-    { 'scircle_left', 'icon', 'wsl',   'title',         'padding',       'scircle_right' },
-    { 'scircle_left', 'icon', 'wsl',   'title',         'unseen_output', 'padding',      'scircle_right' },
-}
-
 ---@type table<string, Cells.SegmentColors>
 local tab_colors = {
     text_default          = { bg = gits.tabBgDefault, fg = gits.tabFgDefault },
@@ -109,82 +106,68 @@ local tab_colors = {
 
 ---@param proc string
 local function clean_process_name(proc)
-    local a = string.gsub(proc, '(.*[/\\])(.*)', '%2')
+    local a = string.gsub(proc, '(.*[/\\\\])(.*)', '%2')
     return a:gsub('%.exe$', '')
 end
 
----Shorten path to show just filename or abbreviated path
 ---@param path string
 ---@return string
 local function shorten_path(path)
-    -- If empty or nil, return placeholder
     if not path or path == '' then
         return 'no title'
     end
 
-    -- If it's just a short filename or simple name, return as-is
-    if not path:match('[/\\]') and path:len() < 20 then
+    if not path:match('[/\\\\]') and path:len() < 20 then
         return path
     end
 
-    -- Handle SSH/remote sessions (user@host:path format)
+    -- SSH titles arrive as `user@host:path`.
     local user_host = path:match('^%S+@%S+:')
     if user_host then
         local remote_path = path:sub(user_host:len() + 1)
-        if not remote_path:match('[/\\]') then
+        if not remote_path:match('[/\\\\]') then
             return path
         end
-        local filename = remote_path:match('[^/\\]+$')
+        local filename = remote_path:match('[^/\\\\]+$')
         return user_host .. (filename or remote_path)
     end
 
-    -- Replace home directory with ~
-    local home = wezterm.home_dir:gsub('\\', '/')
-    local short = path:gsub('\\', '/')
+    local home = wezterm.home_dir:gsub('\\\\', '/')
+    local short = path:gsub('\\\\', '/')
     short = short:gsub('^' .. home, '~')
 
-    -- If it starts with ~/, shorten intelligently
     if short:match('^~/') then
         local filename = short:match('[^/]+$')
         local dirname = short:match('^~/(.*)/[^/]+$')
 
         if dirname and filename then
-            -- Split into parts
             local parts = {}
             for part in dirname:gmatch('[^/]+') do
                 table.insert(parts, part)
             end
 
             if #parts > 2 then
-                -- Deep paths: ~/.../dir/filename
                 return '~/' .. parts[#parts - 1] .. '/' .. filename
             elseif #parts > 0 then
-                -- Shallow paths: ~/dir/filename
                 return '~/' .. dirname .. '/' .. filename
             else
-                -- Just filename
                 return '~/' .. filename
             end
         else
-            -- Just filename if no directory
             return '~/' .. (filename or short)
         end
     end
 
-    -- For non-home paths, show last 2 components
     local parts = {}
     for part in short:gmatch('[^/]+') do
         table.insert(parts, part)
     end
 
     if #parts > 2 then
-        -- Show last 2 parts for deep paths
         return parts[#parts - 1] .. '/' .. parts[#parts]
     elseif #parts > 1 then
-        -- Show last 2 parts
         return parts[#parts - 1] .. '/' .. parts[#parts]
     elseif #parts == 1 then
-        -- Just show the single part
         return parts[1]
     else
         return short
@@ -204,11 +187,9 @@ local function create_title(base_title, max_width, inset)
         title = base_title:gsub('InputSelector:', GLYPH_SEARCH)
         inset = inset - 2
     else
-        -- Shorten the path
         title = shorten_path(base_title)
     end
 
-    -- Account for icon width (will be added in separate segment)
     local icon_width = 2 -- space + icon (approximate)
 
     if title:len() + icon_width > max_width - inset then
@@ -222,7 +203,7 @@ local function create_title(base_title, max_width, inset)
     return title
 end
 
----@param panes any[] WezTerm https://wezfurlong.org/wezterm/config/lua/pane/index.html
+---@param panes any[] WezTerm pane list, see https://wezterm.org/config/lua/pane/index.html
 local function check_unseen_output(panes)
     local unseen_output = false
     local unseen_output_count = 0
@@ -250,6 +231,8 @@ end
 ---@field is_admin boolean
 ---@field unseen_output boolean
 ---@field unseen_output_count number
+---@field progress_text string
+---@field progress_color string
 ---@field is_active boolean
 ---@field process_icon string
 ---@field process_color string
@@ -266,6 +249,8 @@ function Tab:new()
         is_admin = false,
         unseen_output = false,
         unseen_output_count = 0,
+        progress_text = '',
+        progress_color = gits.success,
         process_icon = '',
         process_color = gits.iconDefault,
     }
@@ -273,7 +258,7 @@ function Tab:new()
 end
 
 ---@param event_opts Event.TabTitleOptions
----@param tab any WezTerm https://wezfurlong.org/wezterm/config/lua/MuxTab/index.html
+---@param tab any WezTerm tab, see https://wezterm.org/config/lua/MuxTab/index.html
 ---@param max_width number
 function Tab:set_info(event_opts, tab, max_width)
     local process_name = clean_process_name(tab.active_pane.foreground_process_name)
@@ -285,16 +270,12 @@ function Tab:set_info(event_opts, tab, max_width)
     self.unseen_output = false
     self.unseen_output_count = 0
 
-    -- Store process icon and color
     if process_name and process_name ~= '' then
-        self.process_icon = get_process_icon(process_name) or ProgramIcons.get_process_icon('')
-        self.process_color = get_process_color(process_name) or gits.iconDefault
+        self.process_icon = ProgramIcons.get_process_icon(process_name)
+            or ProgramIcons.get_process_icon('')
+        self.process_color = ProgramIcons.get_process_color(process_name) or gits.iconDefault
     else
-        -- Default icon if no process name
-        self.process_icon = ProgramIcons.get_process_icon('')
-        if not self.process_icon then
-            self.process_icon = ''
-        end
+        self.process_icon = ProgramIcons.get_process_icon('') or ''
         self.process_color = gits.iconDefault
     end
 
@@ -302,8 +283,13 @@ function Tab:set_info(event_opts, tab, max_width)
         self.unseen_output, self.unseen_output_count = check_unseen_output(tab.panes)
     end
 
+    self:set_progress(tab.active_pane.progress)
+
     local inset = (self.is_admin or self.is_wsl) and TITLE_INSET.ICON or TITLE_INSET.DEFAULT
     if self.unseen_output then
+        inset = inset + 2
+    end
+    if self.progress_text ~= '' then
         inset = inset + 2
     end
 
@@ -312,6 +298,33 @@ function Tab:set_info(event_opts, tab, max_width)
         return
     end
     self.title = create_title(tab.active_pane.title, max_width, inset)
+end
+
+---Progress comes from the ConEmu OSC 9;4 sequence that the running program sends.
+---@param progress string|table|nil 'None', 'Indeterminate', {Percentage: number} or {Error: number}
+function Tab:set_progress(progress)
+    self.progress_text = ''
+    self.progress_color = gits.success
+
+    if progress == nil or progress == 'None' then
+        return
+    end
+
+    if progress == 'Indeterminate' then
+        self.progress_text = ' ' .. GLYPH_PROGRESS_INDETERMINATE
+        return
+    end
+
+    if type(progress) ~= 'table' then
+        return
+    end
+
+    if progress.Error ~= nil then
+        self.progress_text = ' ' .. progress_glyph(progress.Error)
+        self.progress_color = gits.alert
+    elseif progress.Percentage ~= nil then
+        self.progress_text = ' ' .. progress_glyph(progress.Percentage)
+    end
 end
 
 function Tab:create_cells()
@@ -323,6 +336,7 @@ function Tab:create_cells()
         :add_segment('wsl', ' ' .. GLYPH_LINUX)
         :add_segment('title', ' ', nil, attr(attr.intensity('Bold')))
         :add_segment('unseen_output', ' ' .. GLYPH_CIRCLE)
+        :add_segment('progress', '')
         :add_segment('padding', ' ')
         :add_segment('scircle_right', GLYPH_SCIRCLE_RIGHT)
 end
@@ -346,7 +360,6 @@ function Tab:update_cells(event_opts, is_active, hover, tab_index)
 
     self.cells:update_segment_text('icon', ' ' .. (self.process_icon or ''))
 
-    -- Add tab index if feature is enabled
     local title_text = ' ' .. self.title
     if Features.is_enabled('tab-index') and tab_index then
         title_text = ' ' .. tab_index .. ':' .. self.title
@@ -366,6 +379,8 @@ function Tab:update_cells(event_opts, is_active, hover, tab_index)
         )
     end
 
+    self.cells:update_segment_text('progress', self.progress_text)
+
     self.cells
         :update_segment_colors('scircle_left', tab_colors['scircle_' .. tab_state])
         :update_segment_colors('icon', { bg = tab_colors['text_' .. tab_state].bg, fg = self.process_color })
@@ -373,21 +388,34 @@ function Tab:update_cells(event_opts, is_active, hover, tab_index)
         :update_segment_colors('wsl', tab_colors['text_' .. tab_state])
         :update_segment_colors('title', tab_colors['text_' .. tab_state])
         :update_segment_colors('unseen_output', tab_colors['unseen_output_' .. tab_state])
+        :update_segment_colors('progress', { bg = tab_colors['text_' .. tab_state].bg, fg = self.progress_color })
         :update_segment_colors('padding', tab_colors['text_' .. tab_state])
         :update_segment_colors('scircle_right', tab_colors['scircle_' .. tab_state])
 end
 
----@return FormatItem[] (ref: https://wezfurlong.org/wezterm/config/lua/wezterm/format.html)
+---@return FormatItem[] (ref: https://wezterm.org/config/lua/wezterm/format.html)
 function Tab:render()
-    local variant_idx = self.is_admin and 3 or 1
+    local ids = { 'scircle_left', 'icon' }
+
     if self.is_wsl then
-        variant_idx = 5
+        table.insert(ids, 'wsl')
+    elseif self.is_admin then
+        table.insert(ids, 'admin')
     end
 
+    table.insert(ids, 'title')
+
     if self.unseen_output then
-        variant_idx = variant_idx + 1
+        table.insert(ids, 'unseen_output')
     end
-    return self.cells:render(RENDER_VARIANTS[variant_idx])
+    if self.progress_text ~= '' then
+        table.insert(ids, 'progress')
+    end
+
+    table.insert(ids, 'padding')
+    table.insert(ids, 'scircle_right')
+
+    return self.cells:render(ids)
 end
 
 ---@type Tab[]
@@ -436,7 +464,6 @@ M.setup = function(opts)
     end)
 
     wezterm.on('format-tab-title', function(tab, _tabs, _panes, _config, hover, max_width)
-        -- Return default if tab-title feature is disabled
         if not Features.is_enabled('tab-title') then
             return tab.active_pane.title
         end
